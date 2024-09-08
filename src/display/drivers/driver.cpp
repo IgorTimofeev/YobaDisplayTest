@@ -74,27 +74,25 @@ void Driver::begin() {
 }
 
 
-void Driver::sendCommand(uint8_t command, bool keepChipSelectActive) {
+void Driver::sendCommand(uint8_t command) {
 	spi_transaction_t transaction;
 	memset(&transaction, 0, sizeof(transaction));       //Zero out the transaction
 	transaction.length = 8;                   //Command is 8 bits
 	transaction.tx_buffer = &command;             //The data is the cmd itself
 	transaction.user = (void*) 0;              //D/C needs to be set to 0
-
-	if (keepChipSelectActive)
-		transaction.flags = SPI_TRANS_CS_KEEP_ACTIVE;   //Keep CS active after data transfer
+//	transaction.flags = SPI_TRANS_CS_KEEP_ACTIVE;   //Keep CS active after data transfer
 
 	auto result = spi_device_polling_transmit(_spi, &transaction); //Transmit!
 	assert(result == ESP_OK);          //Should have had no issues.
 }
 
-void Driver::sendData(const uint8_t *data, int len) {
-	if (len == 0)
+void Driver::sendData(const uint8_t *data, int length) {
+	if (length == 0)
 		return;    //no need to send anything
 
 	spi_transaction_t transaction;
 	memset(&transaction, 0, sizeof(transaction));       //Zero out the transaction
-	transaction.length = len * 8;             //Len is in bytes, transaction length is in bits.
+	transaction.length = length * 8;             //Len is in bytes, transaction length is in bits.
 	transaction.tx_buffer = data;             //Data
 	transaction.user = (void*)1;              //D/C needs to be set to 1
 
@@ -187,7 +185,6 @@ size_t Driver::getTransactionBufferSize() const {
 	return _transactionBufferSize;
 }
 
-
 void Driver::pushTransactions(const std::function<void()> &iterator) {
 	for (int transactionY = 0; transactionY < _display->getHeight(); transactionY += _transactionScanlines) {
 		// pizda...
@@ -196,5 +193,10 @@ void Driver::pushTransactions(const std::function<void()> &iterator) {
 		// Showing data on display
 		pushTransactions(transactionY);
 	}
+}
+
+void Driver::sendCommandAndData(uint8_t command, const uint8_t *data, int length) {
+	sendCommand(command);
+	sendData(data, length);
 }
 

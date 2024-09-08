@@ -1,88 +1,171 @@
 #include "ILI9341Driver.h"
 #include "display/display.h"
 
-const InitializationCommand ILI9341Driver::initializationCommands[] = {
-/* Power contorl B, power control = 0, DC_ENA = 1 */
-{0xCF, {0x00, 0x83, 0X30}, 3},
-/* Power on sequence control,
- * cp1 keeps 1 frame, 1st frame enable
- * vcl = 0, ddvdh=3, vgh=1, vgl=2
- * DDVDH_ENH=1
- */
-{0xED, {0x64, 0x03, 0X12, 0X81}, 4},
-/* Driver timing control A,
- * non-overlap=default +1
- * EQ=default - 1, CR=default
- * pre-charge=default - 1
- */
-{0xE8, {0x85, 0x01, 0x79}, 3},
-/* Power control A, Vcore=1.6V, DDVDH=5.6V */
-{0xCB, {0x39, 0x2C, 0x00, 0x34, 0x02}, 5},
-/* Pump ratio control, DDVDH=2xVCl */
-{0xF7, {0x20}, 1},
-/* Driver timing control, all=0 unit */
-{0xEA, {0x00, 0x00}, 2},
-/* Power control 1, GVDD=4.75V */
-{0xC0, {0x26}, 1},
-/* Power control 2, DDVDH=VCl*2, VGH=VCl*7, VGL=-VCl*3 */
-{0xC1, {0x11}, 1},
-/* VCOM control 1, VCOMH=4.025V, VCOML=-0.950V */
-{0xC5, {0x35, 0x3E}, 2},
-/* VCOM control 2, VCOMH=VMH-2, VCOML=VML-2 */
-{0xC7, {0xBE}, 1},
-
-/* Memory access control, MX=0, MY=0, MV=1, ML=0, BGR=1, MH=0, X, X */
-//	{0x36, {0x28}, 1},
-{0x36, {0 << 7 | 0 << 6 | 1 << 5 | 0 << 4 | 1 << 3 | 0 << 2 | 0 << 1 | 0}, 1},
-
-// INVERSION
-{0x21, {0x01}, 1},
-
-/* Pixel format, 16bits/pixel for RGB/MCU interface */
-{0x3A, {0x55}, 1},
-
-/* Frame rate control, f=fosc, 70Hz fps */
-{0xB1, {0x00, 0x1B}, 2},
-/* Enable 3G, disabled */
-{0xF2, {0x08}, 1},
-/* Gamma set, curve 1 */
-{0x26, {0x01}, 1},
-/* Positive gamma correction */
-{0xE0, {0x1F, 0x1A, 0x18, 0x0A, 0x0F, 0x06, 0x45, 0X87, 0x32, 0x0A, 0x07, 0x02, 0x07, 0x05, 0x00}, 15},
-/* Negative gamma correction */
-{0XE1, {0x00, 0x25, 0x27, 0x05, 0x10, 0x09, 0x3A, 0x78, 0x4D, 0x05, 0x18, 0x0D, 0x38, 0x3A, 0x1F}, 15},
-/* Column address set, SC=0, EC=0xEF */
-{0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},
-/* Page address set, SP=0, EP=0x013F */
-{0x2B, {0x00, 0x00, 0x01, 0x3f}, 4},
-/* Memory write */
-{0x2C, {0}, 0},
-/* Entry mode set, Low vol detect disabled, normal display */
-{0xB7, {0x07}, 1},
-/* Display function control */
-{0xB6, {0x0A, 0x82, 0x27, 0x00}, 4},
-/* Sleep out */
-{0x11, {0}, 0x80},
-/* Display on */
-{0x29, {0}, 0x80},
-{0, {0}, 0xff},
-};
-
 ILI9341Driver::ILI9341Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin) : Driver(chipSelectPin, dataCommandPin, resetPin) {
 
 }
 
 void ILI9341Driver::writeInitializationCommands() {
-	//Send all the commands
-	int cmd = 0;
+	uint8_t b[16];
 
-	while (initializationCommands[cmd].databytes != 0xff) {
-		sendCommand(initializationCommands[cmd].cmd, false);
-		sendData(initializationCommands[cmd].data, initializationCommands[cmd].databytes & 0x1F);
+	/* Power control B, power control = 0, DC_ENA = 1 */
+	b[0] = 0x00;
+	b[1] = 0x83;
+	b[2] = 0x30;
+	sendCommandAndData(0xCF, b, 3);
 
-		if (initializationCommands[cmd].databytes & 0x80)
-			vTaskDelay(100 / portTICK_PERIOD_MS);
+	/* Power on sequence control,
+	* cp1 keeps 1 frame, 1st frame enable
+	* vcl = 0, ddvdh=3, vgh=1, vgl=2
+	* DDVDH_ENH=1
+	*/
+	b[0] = 0x64;
+	b[1] = 0x03;
+	b[2] = 0x12;
+	b[3] = 0x81;
+	sendCommandAndData(0xED, b, 4);
 
-		cmd++;
-	}
+	/* Driver timing control A,
+	* non-overlap=default +1
+	* EQ=default - 1, CR=default
+	* pre-charge=default - 1
+	*/
+	b[0] = 0x85;
+	b[1] = 0x01;
+	b[2] = 0x79;
+	sendCommandAndData(0xE8, b, 3);
+
+	/* Power control A, Vcore=1.6V, DDVDH=5.6V */
+	b[0] = 0x39;
+	b[1] = 0x2C;
+	b[2] = 0x00;
+	b[3] = 0x34;
+	b[4] = 0x02;
+	sendCommandAndData(0xCB, b, 5);
+
+	/* Pump ratio control, DDVDH=2xVCl */
+	b[0] = 0x20;
+	sendCommandAndData(0xF7, b, 1);
+
+	/* Driver timing control, all=0 unit */
+	b[0] = 0x00;
+	b[1] = 0x00;
+	sendCommandAndData(0xEA, b, 2);
+
+	/* Power control 1, GVDD=4.75V */
+	b[0] = 0x26;
+	sendCommandAndData(0xC0, b, 1);
+
+	/* Power control 2, DDVDH=VCl*2, VGH=VCl*7, VGL=-VCl*3 */
+	b[0] = 0x11;
+	sendCommandAndData(0xC1, b, 1);
+
+	/* VCOM control 1, VCOMH=4.025V, VCOML=-0.950V */
+	b[0] = 0x35;
+	b[1] = 0x3E;
+	sendCommandAndData(0xC5, b, 2);
+
+	/* VCOM control 2, VCOMH=VMH-2, VCOML=VML-2 */
+	b[0] = 0xBE;
+	sendCommandAndData(0xC7, b, 1);
+
+	/* Memory access control, MX=0, MY=0, MV=1, ML=0, BGR=1, MH=0, X, X */
+	b[0] = 0 << 7 | 0 << 6 | 1 << 5 | 0 << 4 | 1 << 3 | 0 << 2 | 0 << 1 | 0;
+	sendCommandAndData(0x36, b, 1);
+
+	/* Inversion */
+	b[0] = 0x01;
+	sendCommandAndData(0x21, b, 1);
+
+	/* Pixel format, 16bits/pixel for RGB/MCU interface */
+	b[0] = 0x55;
+	sendCommandAndData(0x3A, b, 1);
+
+	/* Frame rate control, f=fosc, 70Hz fps */
+	b[0] = 0x00;
+	b[1] = 0x1B;
+	sendCommandAndData(0xB1, b, 2);
+
+	/* Enable 3G, disabled */
+	b[0] = 0x08;
+	sendCommandAndData(0xF2, b, 1);
+
+	/* Gamma set, curve 1 */
+	b[0] = 0x01;
+	sendCommandAndData(0x26, b, 1);
+
+	/* Positive gamma correction */
+	b[0] = 0x1F;
+	b[1] = 0x1A;
+	b[2] = 0x18;
+	b[3] = 0x0A;
+	b[4] = 0x0F;
+	b[5] = 0x06;
+	b[6] = 0x45;
+	b[7] = 0x87;
+	b[8] = 0x32;
+	b[9] = 0x0A;
+	b[10] = 0x07;
+	b[11] = 0x02;
+	b[12] = 0x07;
+	b[13] = 0x05;
+	b[15] = 0x00;
+	sendCommandAndData(0xE0, b, 15);
+
+	/* Negative gamma correction */
+	b[0] = 0x00;
+	b[1] = 0x25;
+	b[2] = 0x27;
+	b[3] = 0x05;
+	b[4] = 0x10;
+	b[5] = 0x09;
+	b[6] = 0x3A;
+	b[7] = 0x78;
+	b[8] = 0x4D;
+	b[9] = 0x05;
+	b[10] = 0x18;
+	b[11] = 0x0D;
+	b[12] = 0x38;
+	b[13] = 0x3A;
+	b[15] = 0x1F;
+	sendCommandAndData(0xE1, b, 15);
+
+	/* Column address set, SC=0, EC=0xEF */
+	b[0] = 0x00;
+	b[1] = 0x00;
+	b[2] = 0x00;
+	b[3] = 0xEF;
+	sendCommandAndData(0x2A, b, 4);
+
+	/* Page address set, SP=0, EP=0x013F */
+	b[0] = 0x00;
+	b[1] = 0x00;
+	b[2] = 0x01;
+	b[3] = 0x3f;
+	sendCommandAndData(0x2B, b, 4);
+
+	/* Memory write */
+	b[0] = 0x00;
+	sendCommandAndData(0x2C, b, 0);
+
+	/* Entry mode set, Low vol detect disabled, normal display */
+	b[0] = 0x07;
+	sendCommandAndData(0xB7, b, 1);
+
+	/* Display function control */
+	b[0] = 0x0A;
+	b[1] = 0x82;
+	b[2] = 0x27;
+	b[3] = 0x00;
+	sendCommandAndData(0xB6, b, 4);
+
+	/* Sleep out */
+	b[0] = 0x00;
+	sendCommandAndData(0x11, b, 1);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
+
+	/* Display on */
+	b[0] = 0x00;
+	sendCommandAndData(0x29, b, 1);
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 }

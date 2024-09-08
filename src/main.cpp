@@ -22,7 +22,6 @@ Display display = Display(
 
 void setup() {
 	Serial.begin(115200);
-	Serial.printf("Free heap: %d\n", (ESP.getFreeHeap()));
 
 	// Transceiver
 	Serial.println("Offing Transceiver");
@@ -71,7 +70,7 @@ void loop() {
 	buffer.flush();
 
 	auto delta = esp_timer_get_time() - startTime;
-	Serial.printf("FPS: %lld, color: %d, heap: %d kb\n", 60000000 / delta, color, ESP.getFreeHeap() / 1024);
+	Serial.printf("FPS: %lld, color: %d, free heap: %d kb, max alloc heap: %d kb\n", 60000000 / delta, color, ESP.getFreeHeap() / 1024, ESP.getMaxAllocHeap() / 1024);
 
 //	delay(100);
 }

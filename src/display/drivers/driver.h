@@ -25,7 +25,7 @@ class Driver {
  * mode for higher speed. The overhead of interrupt transactions is more than
  * just waiting for the transaction to complete.
  */
-		void sendCommand(uint8_t command, bool keepChipSelectActive);
+		void sendCommand(uint8_t command);
 
 		/* Send data to the LCD. Uses spi_device_polling_transmit, which waits until the
 		 * transfer is complete.
@@ -34,7 +34,9 @@ class Driver {
 		 * mode for higher speed. The overhead of interrupt transactions is more than
 		 * just waiting for the transaction to complete.
 		 */
-		void sendData(const uint8_t *data, int len);
+		void sendData(const uint8_t *data, int length);
+
+		void sendCommandAndData(uint8_t command, const uint8_t *data, int length);
 
 		//This function is called (in irq context!) just before a transmission starts. It will
 		//set the D/C line to the value indicated in the user field.
