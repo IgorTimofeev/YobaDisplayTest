@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <cstring>
 #include "buffer.h"
 
 enum class ColorDepth : uint8_t {
