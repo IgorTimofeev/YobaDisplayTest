@@ -18,7 +18,7 @@ void FourBitsPaletteBuffer::renderPixel(int32_t x, int32_t y, size_t paletteInde
 }
 
 void FourBitsPaletteBuffer::flush() {
-	size_t bytesTopCopy = _display->getWidth() * _display->getDriver()->getTransactionScanlines() * (uint8_t) _colorDepth / 8;
+	size_t bytesToCopy = _display->getWidth() * _display->getDriver()->getTransactionScanlines() * (uint8_t) _colorDepth / 8;
 	uint8_t bufferByte;
 	size_t bufferIndex = 0;
 
@@ -28,7 +28,7 @@ void FourBitsPaletteBuffer::flush() {
 	_display->getDriver()->pushTransactions([&]() {
 		transactionBufferIndex = 0;
 
-		for (size_t i = 0; i < bytesTopCopy; i++) {
+		for (size_t i = 0; i < bytesToCopy; i++) {
 			bufferByte = _buffer[bufferIndex++];
 
 			transactionBuffer[transactionBufferIndex++] = _palette[bufferByte >> 4];

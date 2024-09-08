@@ -71,7 +71,7 @@ void loop() {
 	buffer.flush();
 
 	auto delta = esp_timer_get_time() - startTime;
-	Serial.printf("FPS: %lld, color: %d\n", 60000000 / delta, color);
+	Serial.printf("FPS: %lld, color: %d, heap: %d kb\n", 60000000 / delta, color, ESP.getFreeHeap() / 1024);
 
 //	delay(100);
 }
