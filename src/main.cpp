@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include "display/display.h"
 #include "display/drivers/ILI9341Driver.h"
-#include "display/buffers/fourBitsPaletteBuffer.h"
 #include "display/buffers/eightBitsPaletteBuffer.h"
 
 ILI9341Driver driver = ILI9341Driver(

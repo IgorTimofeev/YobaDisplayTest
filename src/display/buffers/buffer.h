@@ -6,14 +6,26 @@ class Display;
 
 class Buffer {
 	public:
-		virtual void flush();
-		virtual void setDisplay(Display* display);
+		virtual void flush() {
+
+		}
+
+		virtual void setDisplay(Display* display) {
+			_display = display;
+
+			_bufferLength = calculateBufferLength();
+			_buffer = new uint8_t[_bufferLength] {};
+		}
 
 	protected:
 		Display* _display = nullptr;
 
 		uint8_t* _buffer = nullptr;
 		size_t _bufferLength = 0;
+
+		virtual size_t calculateBufferLength() {
+			return 0;
+		}
 
 	private:
 
@@ -28,3 +40,13 @@ class TypedBuffer : public Buffer {
 	private:
 
 };
+
+template<typename TColor>
+void TypedBuffer<TColor>::clear(TColor value) {
+
+}
+
+template<typename TColor>
+void TypedBuffer<TColor>::renderPixel(int32_t x, int32_t y, TColor value) {
+
+}
