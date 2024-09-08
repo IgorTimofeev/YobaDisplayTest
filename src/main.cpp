@@ -53,7 +53,7 @@ void loop() {
 
 	for (int32_t y = 0; y < display.getHeight(); y++) {
 		for (int32_t x = 0; x < display.getWidth(); x++) {
-			buffer.setPixel(x, y, color);
+			buffer.renderPixel(x, y, color);
 		}
 	}
 

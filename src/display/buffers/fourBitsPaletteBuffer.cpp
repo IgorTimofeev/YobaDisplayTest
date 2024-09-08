@@ -5,7 +5,7 @@
 // 1x1 pixel
 // 0000-0000 0000-0000 0000-0000 0000-0000
 // 0000-AABB 0000-0000 0000-0000 0000-0000
-void FourBitsPaletteBuffer::setPixel(int32_t x, int32_t y, size_t paletteIndex) {
+void FourBitsPaletteBuffer::renderPixel(int32_t x, int32_t y, size_t paletteIndex) {
 	size_t bitIndex = y * _display->getWidth() * (uint8_t) _colorDepth + x * (uint8_t) _colorDepth;
 	size_t byteIndex = bitIndex / 8;
 

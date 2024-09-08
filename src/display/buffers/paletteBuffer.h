@@ -8,7 +8,8 @@ enum class ColorDepth : uint8_t {
 	Two = 2,
 	Four = 4,
 	Eight = 8,
-	Sixteen = 16
+	Sixteen = 16,
+	ThirtyTwo = 32
 };
 
 class PaletteBuffer : public Buffer {
