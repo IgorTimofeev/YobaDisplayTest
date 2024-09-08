@@ -3,15 +3,15 @@
 #include "display/drivers/ILI9341Driver.h"
 #include "display/buffers/fourBitsPaletteBuffer.h"
 
-ILI9341Driver driver = ILI9341Driver();
+ILI9341Driver driver = ILI9341Driver(
+	5,
+	16,
+	17
+);
 
 FourBitsPaletteBuffer buffer = FourBitsPaletteBuffer();
 
 Display display = Display(
-	5,
-	16,
-	17,
-
 	driver,
 	buffer,
 

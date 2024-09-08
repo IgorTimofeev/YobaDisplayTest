@@ -1,7 +1,7 @@
 #include "ILI9341Driver.h"
 #include "display/display.h"
 
-const InitializationCommand ILI9341Driver::govnoCommands[] = {
+const InitializationCommand ILI9341Driver::initializationCommands[] = {
 /* Power contorl B, power control = 0, DC_ENA = 1 */
 {0xCF, {0x00, 0x83, 0X30}, 3},
 /* Power on sequence control,
@@ -68,15 +68,19 @@ const InitializationCommand ILI9341Driver::govnoCommands[] = {
 {0, {0}, 0xff},
 };
 
-void ILI9341Driver::writeInitializationCommands(Display& display) {
+ILI9341Driver::ILI9341Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin) : Driver(chipSelectPin, dataCommandPin, resetPin) {
+
+}
+
+void ILI9341Driver::writeInitializationCommands() {
 	//Send all the commands
 	int cmd = 0;
 
-	while (govnoCommands[cmd].databytes != 0xff) {
-		display.sendCommand(govnoCommands[cmd].cmd, false);
-		display.sendData(govnoCommands[cmd].data, govnoCommands[cmd].databytes & 0x1F);
+	while (initializationCommands[cmd].databytes != 0xff) {
+		sendCommand(initializationCommands[cmd].cmd, false);
+		sendData(initializationCommands[cmd].data, initializationCommands[cmd].databytes & 0x1F);
 
-		if (govnoCommands[cmd].databytes & 0x80)
+		if (initializationCommands[cmd].databytes & 0x80)
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 
 		cmd++;

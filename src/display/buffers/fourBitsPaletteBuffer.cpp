@@ -18,21 +18,13 @@ void FourBitsPaletteBuffer::setPixel(int32_t x, int32_t y, size_t paletteIndex) 
 }
 
 void FourBitsPaletteBuffer::flush() {
-
-//			for (int i = 0; i < _transactionBufferSize; i++) {
-//				_transactionBuffer[i] = to16Bit(RgbColor(color, 0, color));
-//			}
-//
-//			color += 1;
-//
-	// Sending
-	size_t bufferLength = _display->getWidth() * _display->getTransactionScanlines() * (uint8_t) _colorDepth / 8;
+	// Copying screen buffer to transaction buffer
+	size_t bufferLength = _display->getWidth() * _display->getDriver().getTransactionScanlines() * (uint8_t) _colorDepth / 8;
 	size_t transactionBufferIndex;
 	uint8_t bufferByte;
 	size_t bufferIndex = 0;
 
-	_display->pushTransactions([&](uint16_t *transactionBuffer) {
-		// Copying screen buffer to transaction buffer
+	_display->getDriver().pushTransactions([&](uint16_t *transactionBuffer) {
 		transactionBufferIndex = 0;
 
 		for (size_t i = 0; i < bufferLength; i++) {
