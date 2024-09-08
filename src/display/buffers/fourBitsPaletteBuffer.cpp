@@ -18,16 +18,17 @@ void FourBitsPaletteBuffer::renderPixel(int32_t x, int32_t y, size_t paletteInde
 }
 
 void FourBitsPaletteBuffer::flush() {
-	// Copying screen buffer to transaction buffer
-	size_t bufferLength = _display->getWidth() * _display->getDriver().getTransactionScanlines() * (uint8_t) _colorDepth / 8;
-	size_t transactionBufferIndex;
+	size_t bytesTopCopy = _display->getWidth() * _display->getDriver().getTransactionScanlines() * (uint8_t) _colorDepth / 8;
 	uint8_t bufferByte;
 	size_t bufferIndex = 0;
 
-	_display->getDriver().pushTransactions([&](uint16_t *transactionBuffer) {
+	size_t transactionBufferIndex;
+	auto transactionBuffer = _display->getDriver().getTransactionBuffer();
+
+	_display->getDriver().pushTransactions([&]() {
 		transactionBufferIndex = 0;
 
-		for (size_t i = 0; i < bufferLength; i++) {
+		for (size_t i = 0; i < bytesTopCopy; i++) {
 			bufferByte = _buffer[bufferIndex++];
 
 			transactionBuffer[transactionBufferIndex++] = _palette[bufferByte >> 4];

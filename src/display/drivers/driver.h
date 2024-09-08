@@ -49,7 +49,7 @@ class Driver {
 		 */
 		void pushTransactions(int ypos);
 
-		void pushTransactions(const std::function<void(uint16_t*)>& iterator);
+		void pushTransactions(const std::function<void()>& iterator);
 
 		uint8_t getTransactionScanlines() const;
 		uint16_t *getTransactionBuffer() const;

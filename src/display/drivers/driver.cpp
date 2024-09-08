@@ -188,10 +188,10 @@ size_t Driver::getTransactionBufferSize() const {
 }
 
 
-void Driver::pushTransactions(const std::function<void(uint16_t *)> &iterator) {
+void Driver::pushTransactions(const std::function<void()> &iterator) {
 	for (int transactionY = 0; transactionY < _display->getHeight(); transactionY += _transactionScanlines) {
 		// pizda...
-		iterator(_transactionBuffer);
+		iterator();
 
 		// Showing data on display
 		pushTransactions(transactionY);

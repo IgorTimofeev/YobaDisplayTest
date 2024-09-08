@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cstdint"
+#include <cstdlib>
 
 class Display;
 
@@ -12,6 +12,8 @@ class Buffer {
 
 	protected:
 		uint8_t* _buffer = nullptr;
+		size_t _bufferLength = 0;
+
 		Display* _display = nullptr;
 
 	private:

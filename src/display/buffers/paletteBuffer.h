@@ -20,6 +20,8 @@ class PaletteBuffer : public Buffer {
 
 		void setDisplay(Display *display) override;
 
+		void clear(size_t paletteIndex);
+
 	protected:
 		uint16_t* _palette;
 		ColorDepth _colorDepth;

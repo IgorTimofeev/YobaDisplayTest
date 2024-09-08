@@ -12,5 +12,10 @@ void PaletteBuffer::setPaletteColor(size_t index, uint16_t value) {
 void PaletteBuffer::setDisplay(Display *display) {
 	Buffer::setDisplay(display);
 
-	_buffer = new uint8_t[_display->getWidth() * _display->getHeight() * (uint8_t) _colorDepth / 8];
+	_bufferLength = _display->getWidth() * _display->getHeight() * (uint8_t) _colorDepth / 8;
+	_buffer = new uint8_t[_bufferLength];
+}
+
+void PaletteBuffer::clear(size_t paletteIndex) {
+	memset((uint16_t*) _buffer, _palette[paletteIndex], _bufferLength);
 }

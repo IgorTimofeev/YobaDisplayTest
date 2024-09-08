@@ -9,7 +9,7 @@ ILI9341Driver driver = ILI9341Driver(
 	17
 );
 
-FourBitsPaletteBuffer buffer = FourBitsPaletteBuffer();
+FourBitsPaletteBuffer buffer;
 
 Display display = Display(
 	driver,
@@ -48,14 +48,13 @@ int32_t colorStep = 1;
 void loop() {
 	auto startTime = esp_timer_get_time();
 
-	auto depth = (uint8_t) ColorDepth::Four;
-	auto heightPart = 240 /depth;
+	buffer.clear(color);
 
-	for (int32_t y = 0; y < display.getHeight(); y++) {
-		for (int32_t x = 0; x < display.getWidth(); x++) {
-			buffer.renderPixel(x, y, color);
-		}
-	}
+//	for (int32_t y = 0; y < display.getHeight(); y++) {
+//		for (int32_t x = 0; x < display.getWidth(); x++) {
+//			buffer.renderPixel(x, y, color);
+//		}
+//	}
 
 	color += colorStep;
 
