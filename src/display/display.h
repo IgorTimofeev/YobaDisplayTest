@@ -2,12 +2,23 @@
 
 #include <driver/spi_master.h>
 
-typedef struct RgbColor
-{
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-} RgbColor;
+class RgbColor {
+	public:
+		RgbColor() : r(0), g(0), b(0) {}
+		RgbColor(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
+
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+};
+
+enum class ColorDepth : uint8_t {
+	One = 1,
+	Two = 2,
+	Four = 4,
+	Eight = 8,
+	Sixteen = 16
+};
 
 static uint16_t to16Bit(const RgbColor& color) {
 	return (color.r >> 3) << 3 | (color.g >> 5) | ((color.g >> 2) << 13) | ((color.b >> 3) << 8);
@@ -141,6 +152,28 @@ DRAM_ATTR static const InitializationCommand ILI9341InitializationCommands[] = {
 	{0, {0}, 0xff},
 };
 
+const uint16_t govnoPalette[4] = {
+	to16Bit(RgbColor(0xFF, 0x00, 0x00)),
+	to16Bit(RgbColor(0x00, 0xFF, 0x00)),
+	to16Bit(RgbColor(0x00, 0x00, 0xFF)),
+	to16Bit(RgbColor(0xFF, 0x00, 0xFF)),
+
+//	to16Bit(RgbColor(0x44, 0x44, 0x44)),
+//	to16Bit(RgbColor(0x55, 0x55, 0x55)),
+//	to16Bit(RgbColor(0x66, 0x66, 0x66)),
+//	to16Bit(RgbColor(0x77, 0x77, 0x77)),
+//
+//	to16Bit(RgbColor(0x88, 0x88, 0x88)),
+//	to16Bit(RgbColor(0x99, 0x99, 0x99)),
+//	to16Bit(RgbColor(0xAA, 0xAA, 0xAA)),
+//	to16Bit(RgbColor(0xBB, 0xBB, 0xBB)),
+//
+//	to16Bit(RgbColor(0xCC, 0xCC, 0xCC)),
+//	to16Bit(RgbColor(0xDD, 0xDD, 0xDD)),
+//	to16Bit(RgbColor(0xEE, 0xEE, 0xEE)),
+//	to16Bit(RgbColor(0xFF, 0xFF, 0xFF))
+};
+
 class Display {
 	public:
 		Display(
@@ -155,7 +188,20 @@ class Display {
 		_chipSelectPin(chipSelectPin),
 		_dataCommandPin(dataCommandPin),
 		_resetPin(resetPin) {
+			setPalette(govnoPalette, ColorDepth::Four);
 
+
+			for (int32_t y = 0; y < 120; y++) {
+				for (int32_t x = 0; x < _width; x++) {
+					setPixel(x, y, 0);
+				}
+			}
+
+			for (int32_t y = 120; y < 240; y++) {
+				for (int32_t x = 0; x < _width; x++) {
+					setPixel(x, y, 2);
+				}
+			}
 		}
 
 		/* Send a command to the LCD. Uses spi_device_polling_transmit, which waits
@@ -355,54 +401,100 @@ class Display {
 		uint8_t color = 0;
 
 		void tick() {
-//			if (sending)
-//				return;
+			if (sending)
+				return;
 
-
-			float sStep = 1.0f / (float) _width;
-			float bStep = 1.0f / (float) _height;
-			float s = 0;
-			float b = 1;
-
-			int ib = 0;
-
-//
 //			for (int i = 0; i < _transactionBufferSize; i++) {
-//				_transactionBuffer[i] = to16Bit(RgbColor {
-//					.r = color,
-//					.g = 0,
-//					.b = color
-//				});
+//				_transactionBuffer[i] = to16Bit(RgbColor(color, 0, color));
 //			}
-
+//
+//			color += 1;
+//
 			// Sending
-			for (int y = 0; y < _height; y += _transactionScanlines) {
+			size_t bufferLength = _width * _transactionScanlines * (uint8_t) _colorDepth / 8;
+			size_t transactionBufferIndex;
+			uint8_t bufferByte;
+			size_t bufferIndex = 0;
 
-				// Moving screen buffer data to transaction buffer
-				ib = 0;
+			for (int transactionY = 0; transactionY < _height; transactionY += _transactionScanlines) {
+				// Copying screen buffer to transaction buffer
 
-				for (int yPizda = 0; yPizda < _transactionScanlines; yPizda++) {
-					s = 0;
+				transactionBufferIndex = 0;
 
-					for (int xPizda = 0; xPizda < _width; xPizda++) {
-						_transactionBuffer[ib++] = to16Bit(HsvToRgb(HsvColor({
-							.h = color,
-							.s = (uint8_t) (s * 255.0f),
-							.b = (uint8_t) (b * 255.0f)
-						})));
+				for (size_t i = 0; i < bufferLength; i++) {
+					bufferByte = _buffer[bufferIndex++];
 
-						s += sStep;
+					switch (_colorDepth) {
+						case ColorDepth::Four: {
+							_transactionBuffer[transactionBufferIndex++] = _palette[bufferByte >> 4];
+							_transactionBuffer[transactionBufferIndex++] = _palette[bufferByte & 0b1111];
+
+							break;
+						}
+
+						default:
+							break;
 					}
-
-					b -= bStep;
 				}
 
-				pushTransactions(y);
+
+				// Showing data on display
+				pushTransactions(transactionY);
 				pollTransactions();
 			}
+		}
 
-			color += 4;
+		void setPalette(const uint16_t* palette, ColorDepth colorDepth) {
+			_palette = palette;
+			_colorDepth = colorDepth;
 
+			_buffer = new uint8_t[_width * _height * (uint8_t) _colorDepth / 8];
+		}
+
+		size_t getPixel(int32_t x, int32_t y, size_t paletteIndex) {
+			size_t bitIndex = y * _width * (uint8_t) _colorDepth + x * (uint8_t) _colorDepth;
+			size_t byteIndex = bitIndex / 8;
+
+			switch (_colorDepth) {
+				case ColorDepth::Four: {
+					auto bufferByte = _buffer[byteIndex];
+
+					return
+						bitIndex % 8 == 0
+						? bufferByte >> 4
+						: bufferByte & 0b1111;
+
+					break;
+				}
+
+				default:
+					return 0;
+			}
+		}
+
+		// 8x2 screen
+		// 1x1 pixel
+		// 0000-0000 0000-0000 0000-0000 0000-0000
+		// 0000-AABB 0000-0000 0000-0000 0000-0000
+		void setPixel(int32_t x, int32_t y, size_t paletteIndex) {
+			size_t bitIndex = y * _width * (uint8_t) _colorDepth + x * (uint8_t) _colorDepth;
+			size_t byteIndex = bitIndex / 8;
+
+			switch (_colorDepth) {
+				case ColorDepth::Four: {
+					auto bufferByte = _buffer[byteIndex];
+
+					_buffer[byteIndex] =
+						bitIndex % 8 == 0
+						? (paletteIndex << 4) | (bufferByte & 0b1111)
+						: (bufferByte & 0b11110000) | paletteIndex;
+
+					break;
+				}
+
+				default:
+					break;
+			}
 		}
 
 	private:
@@ -420,6 +512,9 @@ class Display {
 		uint8_t _transactionScanlines = 16;
 		uint16_t* _transactionBuffer;
 		size_t _transactionBufferSize;
-
 		bool sending = false;
+
+		uint8_t* _buffer;
+		const uint16_t* _palette;
+		ColorDepth _colorDepth;
 };
