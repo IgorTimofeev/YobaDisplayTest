@@ -66,6 +66,16 @@ class Display {
 		 */
 		void pushTransactions(int ypos);
 
+		void pushTransactions(const std::function<void(uint16_t*)>& iterator) {
+			for (int transactionY = 0; transactionY < _height; transactionY += _transactionScanlines) {
+				// pizda...
+				iterator(_transactionBuffer);
+
+				// Showing data on display
+				pushTransactions(transactionY);
+			}
+		}
+
 		uint16_t getWidth() const;
 		uint16_t getHeight() const;
 		Buffer &getBuffer() const;

@@ -9,9 +9,9 @@ void FourBitsPaletteBuffer::setPixel(int32_t x, int32_t y, size_t paletteIndex) 
 	size_t bitIndex = y * _display->getWidth() * (uint8_t) _colorDepth + x * (uint8_t) _colorDepth;
 	size_t byteIndex = bitIndex / 8;
 
-	auto bufferByte = _buffer[byteIndex];
+	auto& bufferByte = _buffer[byteIndex];
 
-	_buffer[byteIndex] =
+	bufferByte =
 		bitIndex % 8 == 0
 		? (paletteIndex << 4) | (bufferByte & 0b1111)
 		: (bufferByte & 0b11110000) | paletteIndex;
@@ -31,20 +31,15 @@ void FourBitsPaletteBuffer::flush() {
 	uint8_t bufferByte;
 	size_t bufferIndex = 0;
 
-	for (int transactionY = 0; transactionY < _display->getHeight(); transactionY += _display->getTransactionScanlines()) {
+	_display->pushTransactions([&](uint16_t *transactionBuffer) {
 		// Copying screen buffer to transaction buffer
-
 		transactionBufferIndex = 0;
 
 		for (size_t i = 0; i < bufferLength; i++) {
 			bufferByte = _buffer[bufferIndex++];
 
-			_display->getTransactionBuffer()[transactionBufferIndex++] = _palette[bufferByte >> 4];
-			_display->getTransactionBuffer()[transactionBufferIndex++] = _palette[bufferByte & 0b1111];
+			transactionBuffer[transactionBufferIndex++] = _palette[bufferByte >> 4];
+			transactionBuffer[transactionBufferIndex++] = _palette[bufferByte & 0b1111];
 		}
-
-
-		// Showing data on display
-		_display->pushTransactions(transactionY);
-	}
+	});
 }
