@@ -1,10 +1,14 @@
 #pragma once
 
+
+class Display;
+
 class Driver {
 	public:
-		virtual void begin() {
+		virtual void writeInitializationCommands(Display& display);
 
-		}
+	protected:
+
 
 	private:
 
