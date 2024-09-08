@@ -89,10 +89,9 @@ class Display {
 
 		spi_device_handle_t _spi;
 
-
 		//To speed up transfers, every SPI transfer sends a bunch of lines. This define specifies how many. More means more memory use,
 		//but less overhead for setting up / finishing transfers. Make sure 240 is dividable by this.
 		uint8_t _transactionScanlines = 16;
-		uint16_t* _transactionBuffer;
-		size_t _transactionBufferSize;
+		uint16_t* _transactionBuffer = nullptr;
+		size_t _transactionBufferSize = 0;
 };

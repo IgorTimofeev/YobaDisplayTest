@@ -98,11 +98,10 @@ void Display::sendCommand(uint8_t command, bool keepChipSelectActive) {
 }
 
 void Display::sendData(const uint8_t *data, int len) {
-	spi_transaction_t transaction;
-
 	if (len == 0)
 		return;    //no need to send anything
 
+	spi_transaction_t transaction;
 	memset(&transaction, 0, sizeof(transaction));       //Zero out the transaction
 	transaction.length = len * 8;             //Len is in bytes, transaction length is in bits.
 	transaction.tx_buffer = data;             //Data
@@ -118,49 +117,54 @@ void Display::SPIPreTransferCallback(spi_transaction_t *transaction) {
 }
 
 void Display::pushTransactions(int ypos) {
-	//Transaction descriptors. Declared static so they're not allocated on the stack; we need this memory even when this
+	//Transaction descriptors. Declared static, so they're not allocated on the stack; we need this memory even when this
 	//function is finished because the SPI driver needs access to it even while we're already calculating the next line.
-	static spi_transaction_t trans[6];
+	static spi_transaction_t transactions[6];
 
 	//In theory, it's better to initialize trans and data only once and hang on to the initialized
 	//variables. We allocate them on the stack, so we need to re-init them each call.
 	for (uint8_t i = 0; i < 6; i++) {
-		memset(&trans[i], 0, sizeof(spi_transaction_t));
+		memset(&transactions[i], 0, sizeof(spi_transaction_t));
 
 		if ((i & 1) == 0) {
 			//Even transfers are commands
-			trans[i].length = 8;
-			trans[i].user = (void*) 0;
+			transactions[i].length = 8;
+			transactions[i].user = (void*) 0;
 		}
 		else {
 			//Odd transfers are data
-			trans[i].length = 8 * 4;
-			trans[i].user = (void*) 1;
+			transactions[i].length = 8 * 4;
+			transactions[i].user = (void*) 1;
 		}
 
-		trans[i].flags = SPI_TRANS_USE_TXDATA;
+		transactions[i].flags = SPI_TRANS_USE_TXDATA;
 	}
 
-	trans[0].tx_data[0] = 0x2A;         //Column Address Set
-	trans[1].tx_data[0] = 0;            //Start Col High
-	trans[1].tx_data[1] = 0;            //Start Col Low
-	trans[1].tx_data[2] = (_width - 1) >> 8;   //End Col High
-	trans[1].tx_data[3] = (_width - 1) & 0xff; //End Col Low
-	trans[2].tx_data[0] = 0x2B;         //Page address set
-	trans[3].tx_data[0] = ypos >> 8;    //Start page high
-	trans[3].tx_data[1] = ypos & 0xff;  //start page low
-	trans[3].tx_data[2] = (ypos + _transactionScanlines - 1) >> 8; //end page high
-	trans[3].tx_data[3] = (ypos + _transactionScanlines - 1) & 0xff; //end page low
-	trans[4].tx_data[0] = 0x2C;         //memory write
-	trans[5].tx_buffer = _transactionBuffer;      //finally send the line data
-	trans[5].length = _width * _transactionScanlines * 2 * 8;  //Data length, in bits
-	trans[5].flags = 0; //undo SPI_TRANS_USE_TXDATA flag
+	transactions[0].tx_data[0] = 0x2A;         //Column Address Set
+
+	transactions[1].tx_data[0] = 0;            //Start Col High
+	transactions[1].tx_data[1] = 0;            //Start Col Low
+	transactions[1].tx_data[2] = (_width - 1) >> 8;   //End Col High
+	transactions[1].tx_data[3] = (_width - 1) & 0xff; //End Col Low
+
+	transactions[2].tx_data[0] = 0x2B;         //Page address set
+
+	transactions[3].tx_data[0] = ypos >> 8;    //Start page high
+	transactions[3].tx_data[1] = ypos & 0xff;  //start page low
+	transactions[3].tx_data[2] = (ypos + _transactionScanlines - 1) >> 8; //end page high
+	transactions[3].tx_data[3] = (ypos + _transactionScanlines - 1) & 0xff; //end page low
+
+	transactions[4].tx_data[0] = 0x2C;         //memory write
+
+	transactions[5].tx_buffer = _transactionBuffer;      //finally send the line data
+	transactions[5].length = _width * _transactionScanlines * 2 * 8;  //Data length, in bits
+	transactions[5].flags = 0; //undo SPI_TRANS_USE_TXDATA flag
 
 	// Enqueue all transactions
 	esp_err_t result;
 
 	for (uint8_t i = 0; i < 6; i++) {
-		result = spi_device_queue_trans(_spi, &trans[i], portMAX_DELAY);
+		result = spi_device_queue_trans(_spi, &transactions[i], portMAX_DELAY);
 		assert(result == ESP_OK);
 	}
 
