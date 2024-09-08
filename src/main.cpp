@@ -2,6 +2,7 @@
 #include "display/display.h"
 #include "display/drivers/ILI9341Driver.h"
 #include "display/buffers/fourBitsPaletteBuffer.h"
+#include "display/buffers/eightBitsPaletteBuffer.h"
 
 ILI9341Driver driver = ILI9341Driver(
 	5,
@@ -9,11 +10,11 @@ ILI9341Driver driver = ILI9341Driver(
 	17
 );
 
-FourBitsPaletteBuffer buffer;
+EightBitsPaletteBuffer buffer;
 
 Display display = Display(
-	driver,
-	buffer,
+	&driver,
+	&buffer,
 
 	320,
 	240
@@ -22,9 +23,9 @@ Display display = Display(
 void setup() {
 	Serial.begin(115200);
 	Serial.printf("Free heap: %d\n", (ESP.getFreeHeap()));
-	Serial.println("Offing Transceiver");
 
 	// Transceiver
+	Serial.println("Offing Transceiver");
 	pinMode(4, OUTPUT);
 	digitalWrite(4, HIGH);
 
@@ -32,7 +33,7 @@ void setup() {
 
 	uint8_t govno = 0;
 
-	for(uint8_t i = 0; i < 16; i++) {
+	for (int i = 0; i < 16; i++) {
 		buffer.setPaletteColor(i, to16Bit(RgbColor(govno, govno, govno)));
 		govno += 0x11;
 	}

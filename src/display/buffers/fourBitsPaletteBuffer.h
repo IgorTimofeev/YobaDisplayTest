@@ -10,9 +10,8 @@ class FourBitsPaletteBuffer : public PaletteBuffer {
 
 		void flush() override;
 
+		void renderPixel(int32_t x, int32_t y, size_t paletteIndex) override;
 
-		void renderPixel(int32_t x, int32_t y, size_t paletteIndex);
-		
 	private:
 		uint16_t _palette[16] {};
 };

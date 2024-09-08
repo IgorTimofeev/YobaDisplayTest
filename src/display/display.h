@@ -22,8 +22,8 @@ static uint16_t to16Bit(const RgbColor& color) {
 class Display {
 	public:
 		Display(
-			Driver &driver,
-			Buffer &buffer,
+			Driver* driver,
+			Buffer* buffer,
 
 			uint16_t width,
 			uint16_t height
@@ -33,14 +33,14 @@ class Display {
 
 		uint16_t getWidth() const;
 		uint16_t getHeight() const;
-		Buffer &getBuffer() const;
-		Driver &getDriver() const;
+		Buffer* getBuffer() const;
+		Driver* getDriver() const;
 
 	private:
 		uint16_t _width;
 		uint16_t _height;
 
 
-		Buffer& _buffer;
-		Driver& _driver;
+		Buffer* _buffer;
+		Driver* _driver;
 };

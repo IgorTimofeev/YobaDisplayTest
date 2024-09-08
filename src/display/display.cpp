@@ -1,8 +1,8 @@
 #include "display.h"
 
 Display::Display(
-	Driver &driver,
-	Buffer &buffer,
+	Driver* driver,
+	Buffer* buffer,
 
 	uint16_t width,
 	uint16_t height
@@ -13,12 +13,12 @@ Display::Display(
 	_width(width),
 	_height(height)
 {
-	_driver.setDisplay(this);
-	_buffer.setDisplay(this);
+	_driver->setDisplay(this);
+	_buffer->setDisplay(this);
 }
 
 void Display::begin() {
-	_driver.begin();
+	_driver->begin();
 }
 
 uint16_t Display::getWidth() const {
@@ -29,10 +29,10 @@ uint16_t Display::getHeight() const {
 	return _height;
 }
 
-Buffer &Display::getBuffer() const {
+Buffer* Display::getBuffer() const {
 	return _buffer;
 }
 
-Driver &Display::getDriver() const {
+Driver* Display::getDriver() const {
 	return _driver;
 }

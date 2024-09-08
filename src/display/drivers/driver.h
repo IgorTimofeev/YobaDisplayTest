@@ -56,7 +56,7 @@ class Driver {
 		size_t getTransactionBufferSize() const;
 
 	protected:
-		Display* _display;
+		Display* _display = nullptr;
 
 		uint8_t _chipSelectPin;
 		uint8_t _dataCommandPin;

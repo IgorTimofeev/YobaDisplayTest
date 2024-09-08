@@ -13,9 +13,14 @@ void PaletteBuffer::setDisplay(Display *display) {
 	Buffer::setDisplay(display);
 
 	_bufferLength = _display->getWidth() * _display->getHeight() * (uint8_t) _colorDepth / 8;
-	_buffer = new uint8_t[_bufferLength];
+
+	_buffer = new uint8_t[_bufferLength] {};
 }
 
 void PaletteBuffer::clear(size_t paletteIndex) {
-	memset((uint16_t*) _buffer, _palette[paletteIndex], _bufferLength);
+	memset((uint16_t*) _buffer, (int) paletteIndex, _bufferLength);
+}
+
+void PaletteBuffer::renderPixel(int32_t x, int32_t y, size_t value) {
+
 }
