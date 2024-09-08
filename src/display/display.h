@@ -401,7 +401,7 @@ class Display {
 				pollTransactions();
 			}
 
-			color++;
+			color += 4;
 
 		}
 
