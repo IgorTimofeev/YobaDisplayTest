@@ -3,11 +3,13 @@
 
 Display::Display(
 	Driver* driver,
-	const Size& size
+	const Size& resolution
 ) :
 	_driver(driver),
-	_size(size)
+	_resolution(resolution)
 {
+	_driver->setTransactionBufferHeight(_resolution.getHeight() / 10);
+
 	resetViewport();
 }
 
@@ -16,6 +18,7 @@ void Display::begin() {
 	allocate();
 
 	Serial.println("_driver begin()");
+
 	_driver->begin(this);
 }
 
@@ -23,8 +26,8 @@ Driver* Display::getDriver() const {
 	return _driver;
 }
 
-const Size& Display::getSize() const {
-	return _size;
+const Size& Display::getResolution() const {
+	return _resolution;
 }
 
 Bounds &Display::getViewport() {
@@ -34,12 +37,12 @@ Bounds &Display::getViewport() {
 void Display::resetViewport() {
 	_viewport.setX(0);
 	_viewport.setY(0);
-	_viewport.setWidth(_size.getWidth());
-	_viewport.setHeight(_size.getHeight());
+	_viewport.setWidth(_resolution.getWidth());
+	_viewport.setHeight(_resolution.getHeight());
 }
 
 size_t Display::getIndex(uint16_t x, uint16_t y) const {
-	return y * getSize().getWidth() + x;
+	return y * getResolution().getWidth() + x;
 }
 
 size_t Display::getIndex(const Point &point) {

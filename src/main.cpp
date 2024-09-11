@@ -41,6 +41,7 @@ void setup() {
 
 	Serial.println("Beginning display");
 	display.begin();
+//	display.getDriver()->setTransactionBufferHeight(display.getResolution().getHeight() / 2);
 }
 
 int32_t paletteIndex = 0;

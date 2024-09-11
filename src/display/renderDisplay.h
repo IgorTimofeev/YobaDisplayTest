@@ -5,7 +5,7 @@
 template<typename TValue>
 class RenderDisplay : public Display {
 	public:
-		RenderDisplay(Driver *driver, const Size &size);
+		RenderDisplay(Driver *driver, const Size &resolution);
 
 		virtual void clear(TValue value) = 0;
 
@@ -20,7 +20,7 @@ class RenderDisplay : public Display {
 };
 
 template<typename TValue>
-RenderDisplay<TValue>::RenderDisplay(Driver *driver, const Size &size) : Display(driver, size) {
+RenderDisplay<TValue>::RenderDisplay(Driver *driver, const Size &resolution) : Display(driver, resolution) {
 
 }
 

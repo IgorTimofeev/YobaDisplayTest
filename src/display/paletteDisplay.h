@@ -7,7 +7,7 @@
 template<typename TValue>
 class PaletteDisplay : public RenderDisplay<TValue> {
 	public:
-		PaletteDisplay(Driver *driver, const Size &size, uint16_t *palette);
+		PaletteDisplay(Driver *driver, const Size &resolution, uint16_t *palette);
 
 		void setPaletteColor(TValue index, uint16_t color);
 		void clear(TValue paletteIndex) override;
@@ -17,7 +17,7 @@ class PaletteDisplay : public RenderDisplay<TValue> {
 };
 
 template<typename TValue>
-PaletteDisplay<TValue>::PaletteDisplay(Driver *driver, const Size &size, uint16_t *palette) : RenderDisplay<TValue>(driver, size), _palette(palette) {
+PaletteDisplay<TValue>::PaletteDisplay(Driver *driver, const Size &resolution, uint16_t *palette) : RenderDisplay<TValue>(driver, resolution), _palette(palette) {
 
 }
 

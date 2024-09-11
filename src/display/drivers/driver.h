@@ -38,7 +38,7 @@ class Driver {
 
 		//This function is called (in irq context!) just before a transmission starts. It will
 		//set the D/C line to the value indicated in the user field.
-		static void SPIPreTransferCallback(spi_transaction_t* transaction);
+		static void SPIPreCallback(spi_transaction_t* transaction);
 
 		/* To send a set of lines we have to send a command, 2 data bytes, another command, 2 more data bytes and another command
 		 * before sending the line data itself; a total of 6 transactions. (We can't put all of this in just one transaction
@@ -48,9 +48,11 @@ class Driver {
 		 * the mean while the lines for next transactions can get calculated.
 		 */
 		void flushTransactionBuffer(Display *display, int y);
-		uint8_t getTransactionScanlines() const;
 		uint16_t *getTransactionBuffer() const;
-		size_t getTransactionBufferSize() const;
+		size_t getTransactionBufferLength() const;
+
+		void setTransactionBufferHeight(uint8_t transactionBufferHeight);
+		uint8_t getTransactionBufferHeight() const;
 
 	protected:
 		uint8_t _chipSelectPin;
@@ -61,7 +63,14 @@ class Driver {
 
 		//To speed up transfers, every SPI transfer sends a bunch of lines. This define specifies how many. More means more memory use,
 		//but less overhead for setting up / finishing transfers. Make sure 240 is dividable by this.
-		uint8_t _transactionScanlines = 16;
+		uint8_t _transactionBufferHeight = 120;
 		uint16_t* _transactionBuffer = nullptr;
-		size_t _transactionBufferSize = 0;
+		size_t _transactionBufferLength = 0;
+};
+
+struct DriverSPIPreCallbackUserData {
+	DriverSPIPreCallbackUserData(Driver *driver, bool dataCommandPinState);
+
+	Driver* driver;
+	bool dataCommandPinState;
 };

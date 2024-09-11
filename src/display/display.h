@@ -10,14 +10,14 @@ class Display {
 	public:
 		Display(
 			Driver* driver,
-			const Size& size
+			const Size& resolution
 		);
 
 		void begin();
 
 		Driver* getDriver() const;
 
-		const Size &getSize() const;
+		const Size &getResolution() const;
 
 		Bounds& getViewport();
 		void resetViewport();
@@ -30,11 +30,10 @@ class Display {
 
 	protected:
 		Driver* _driver;
+
 		uint8_t* _buffer = nullptr;
 		size_t _bufferLength = 0;
 
-	private:
-		const Size _size;
-
+		const Size _resolution;
 		Bounds _viewport = Bounds();
 };

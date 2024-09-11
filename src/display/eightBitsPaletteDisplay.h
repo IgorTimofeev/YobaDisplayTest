@@ -5,7 +5,7 @@
 
 class EightBitsPaletteDisplay : public PaletteDisplay<uint8_t> {
 	public:
-		EightBitsPaletteDisplay(Driver *driver, const Size &size);
+		EightBitsPaletteDisplay(Driver *driver, const Size &resolution);
 
 		void allocate() override;
 		void flush() override;
