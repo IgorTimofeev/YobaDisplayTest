@@ -1,10 +1,12 @@
 #pragma once
-#include "buffer.h"
-#include "../display.h"
+#include "display.h"
+#include "display.h"
 
 template<typename TValue>
-class RenderBuffer : public Buffer {
+class RenderDisplay : public Display {
 	public:
+		RenderDisplay(Driver *driver, const Size &size);
+
 		virtual void clear(TValue value) = 0;
 
 		void renderPixel(const Point &point, TValue value);
@@ -18,14 +20,19 @@ class RenderBuffer : public Buffer {
 };
 
 template<typename TValue>
-void RenderBuffer<TValue>::renderPixel(const Point &point, TValue value) {
-	if (_display->getViewport().intersects(point))
+RenderDisplay<TValue>::RenderDisplay(Driver *driver, const Size &size) : Display(driver, size) {
+
+}
+
+template<typename TValue>
+void RenderDisplay<TValue>::renderPixel(const Point &point, TValue value) {
+	if (getViewport().intersects(point))
 		renderPixelUnchecked(point, value);
 }
 
 template<typename TValue>
-void RenderBuffer<TValue>::renderHorizontalLine(const Point &point, uint16_t width, TValue value) {
-	const auto& viewport = _display->getViewport();
+void RenderDisplay<TValue>::renderHorizontalLine(const Point &point, uint16_t width, TValue value) {
+	const auto& viewport = getViewport();
 
 	if (point.getX() > viewport.getWidth() || point.getX() + width < viewport.getX())
 		return;
@@ -37,8 +44,8 @@ void RenderBuffer<TValue>::renderHorizontalLine(const Point &point, uint16_t wid
 }
 
 template<typename TValue>
-void RenderBuffer<TValue>::renderFilledRectangle(const Bounds &bounds, TValue value) {
-	const auto& viewport = _display->getViewport();
+void RenderDisplay<TValue>::renderFilledRectangle(const Bounds &bounds, TValue value) {
+	const auto& viewport = getViewport();
 
 	if (viewport.intersects(bounds))
 		renderFilledRectangleUnchecked(viewport.getIntersection(bounds), value);

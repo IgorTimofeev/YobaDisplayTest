@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include "display/display.h"
 #include "display/drivers/ILI9341Driver.h"
-#include "display/buffers/eightBitsPaletteBuffer.h"
+#include "display/eightBitsPaletteDisplay.h"
+#include "display/color.h"
 
 ILI9341Driver driver = ILI9341Driver(
 	5,
@@ -9,11 +10,8 @@ ILI9341Driver driver = ILI9341Driver(
 	17
 );
 
-EightBitsPaletteBuffer buffer;
-
-Display display = Display(
+EightBitsPaletteDisplay display = EightBitsPaletteDisplay(
 	&driver,
-	&buffer,
 	Size(320, 240)
 );
 
@@ -32,14 +30,14 @@ void setup() {
 	uint8_t govno = 0;
 
 	for (int i = 0; i < 16; i++) {
-		buffer.setPaletteColor(i, Color24(govno, govno, govno).toUint16());
+		display.setPaletteColor(i, Color24(govno, govno, govno).toUint16());
 		govno += 0x11;
 	}
 
 	// RGB
-	buffer.setPaletteColor(16, Color24(0xFF, 0x00, 0x00).toUint16());
-	buffer.setPaletteColor(17, Color24(0x00, 0xFF, 0x00).toUint16());
-	buffer.setPaletteColor(18, Color24(0x00, 0x00, 0xFF).toUint16());
+	display.setPaletteColor(16, Color24(0xFF, 0x00, 0x00).toUint16());
+	display.setPaletteColor(17, Color24(0x00, 0xFF, 0x00).toUint16());
+	display.setPaletteColor(18, Color24(0x00, 0x00, 0xFF).toUint16());
 
 	Serial.println("Beginning display");
 	display.begin();
@@ -51,7 +49,7 @@ Point pivot = Point(5, 5);
 int32_t pivotInc = 1;
 
 void clearDisplay() {
-	buffer.clear(paletteIndex);
+	display.clear(paletteIndex);
 
 	paletteIndex += paletteIndexInc;
 
@@ -70,16 +68,16 @@ void renderPrimitives() {
 
 	// Dots
 	for (int32_t x = point.getX(); x < point.getX() + 100; x += 5)
-		buffer.renderPixel(Point(x, point.getY()), 16);
+		display.renderPixel(Point(x, point.getY()), 16);
 
 	point.setY(point.getY() + 10);
 
 	// Line
-	buffer.renderHorizontalLine(Point(point.getX(), point.getY() + 10), 100, 17);
+	display.renderHorizontalLine(Point(point.getX(), point.getY() + 10), 100, 17);
 	point.setY(point.getY() + 10);
 
 	// Rect
-	buffer.renderFilledRectangle(Bounds(point.getX(), point.getY() + 15, 100, 30), 18);
+	display.renderFilledRectangle(Bounds(point.getX(), point.getY() + 15, 100, 30), 18);
 	point.setY(point.getY() + 40);
 
 	pivot.setX(pivot.getX() + 1);
@@ -94,7 +92,7 @@ void loop() {
 	clearDisplay();
 	renderPrimitives();
 
-	buffer.flush();
+	display.flush();
 
 	auto deltaTime = esp_timer_get_time() - startTime;
 	Serial.printf("FPS: %lld, color: %d, free heap: %d kb, max alloc heap: %d kb\n", 60000000 / deltaTime, paletteIndex, ESP.getFreeHeap() / 1024, ESP.getMaxAllocHeap() / 1024);

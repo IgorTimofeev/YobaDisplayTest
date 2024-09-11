@@ -1,35 +1,40 @@
 #pragma once
 
-#include "display/drivers/driver.h"
-#include "display/buffers/buffer.h"
-#include <driver/spi_master.h>
-#include "Arduino.h"
-#include "color.h"
+#include <cstdlib>
+#include "point.h"
 #include "size.h"
+#include "bounds.h"
+#include "drivers/driver.h"
 
 class Display {
 	public:
 		Display(
 			Driver* driver,
-			Buffer* buffer,
 			const Size& size
 		);
 
 		void begin();
 
-		Buffer* getBuffer() const;
 		Driver* getDriver() const;
+
 		const Size &getSize() const;
 
 		Bounds& getViewport();
-
 		void resetViewport();
 
-	private:
-		Size _size;
+		virtual void allocate() = 0;
+		virtual void flush() = 0;
 
-		Buffer* _buffer;
+		size_t getIndex(uint16_t x, uint16_t y) const;
+		size_t getIndex(const Point& point);
+
+	protected:
 		Driver* _driver;
+		uint8_t* _buffer = nullptr;
+		size_t _bufferLength = 0;
+
+	private:
+		const Size _size;
 
 		Bounds _viewport = Bounds();
 };

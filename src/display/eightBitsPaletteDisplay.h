@@ -1,11 +1,11 @@
 #pragma once
 
-#include "paletteBuffer.h"
+#include "paletteDisplay.h"
 #include "display/display.h"
 
-class EightBitsPaletteBuffer : public PaletteBuffer<uint8_t> {
+class EightBitsPaletteDisplay : public PaletteDisplay<uint8_t> {
 	public:
-		explicit EightBitsPaletteBuffer();
+		EightBitsPaletteDisplay(Driver *driver, const Size &size);
 
 		void allocate() override;
 		void flush() override;
@@ -16,6 +16,6 @@ class EightBitsPaletteBuffer : public PaletteBuffer<uint8_t> {
 		void renderFilledRectangleUnchecked(const Bounds& bounds, uint8_t paletteIndex) override;
 
 	private:
-		uint16_t _palette[256] {};
+		uint16_t _govnoPalette[256] {};
 };
 

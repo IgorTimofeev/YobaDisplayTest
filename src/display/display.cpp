@@ -1,27 +1,23 @@
 #include "display.h"
+#include "display.h"
 
 Display::Display(
 	Driver* driver,
-	Buffer* buffer,
 	const Size& size
 ) :
-	_buffer(buffer),
 	_driver(driver),
 	_size(size)
 {
-	_buffer->setDisplay(this);
 	_driver->setDisplay(this);
-
 	resetViewport();
 }
 
 void Display::begin() {
-	_buffer->allocate();
-	_driver->begin();
-}
+	Serial.println("allocate()");
+	allocate();
 
-Buffer* Display::getBuffer() const {
-	return _buffer;
+	Serial.println("_driver begin()");
+	_driver->begin();
 }
 
 Driver* Display::getDriver() const {
@@ -42,3 +38,13 @@ void Display::resetViewport() {
 	_viewport.setWidth(_size.getWidth());
 	_viewport.setHeight(_size.getHeight());
 }
+
+size_t Display::getIndex(uint16_t x, uint16_t y) const {
+	return y * getSize().getWidth() + x;
+}
+
+size_t Display::getIndex(const Point &point) {
+	return getIndex(point.getX(), point.getY());
+}
+
+
