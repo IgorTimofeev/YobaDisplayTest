@@ -11,11 +11,9 @@ class Driver {
 	public:
 		Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin);
 
-		void begin();
+		void begin(Display *display);
 
 		virtual void writeInitializationCommands();
-
-		void setDisplay(Display *display);
 
 
 		/* Send a command to the LCD. Uses spi_device_polling_transmit, which waits
@@ -49,14 +47,12 @@ class Driver {
 		 * sent faster (compared to calling spi_device_transmit several times), and at
 		 * the mean while the lines for next transactions can get calculated.
 		 */
-		void flushTransactionBuffer(int y);
+		void flushTransactionBuffer(Display *display, int y);
 		uint8_t getTransactionScanlines() const;
 		uint16_t *getTransactionBuffer() const;
 		size_t getTransactionBufferSize() const;
 
 	protected:
-		Display* _display = nullptr;
-
 		uint8_t _chipSelectPin;
 		uint8_t _dataCommandPin;
 		uint8_t _resetPin;

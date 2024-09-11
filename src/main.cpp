@@ -19,7 +19,7 @@ void setup() {
 	Serial.begin(115200);
 
 	// Transceiver
-	Serial.println("Disabling Transceiver");
+	Serial.println("Disabling transceiver");
 	pinMode(4, OUTPUT);
 	digitalWrite(4, HIGH);
 

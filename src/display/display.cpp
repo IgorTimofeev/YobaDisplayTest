@@ -8,7 +8,6 @@ Display::Display(
 	_driver(driver),
 	_size(size)
 {
-	_driver->setDisplay(this);
 	resetViewport();
 }
 
@@ -17,7 +16,7 @@ void Display::begin() {
 	allocate();
 
 	Serial.println("_driver begin()");
-	_driver->begin();
+	_driver->begin(this);
 }
 
 Driver* Display::getDriver() const {

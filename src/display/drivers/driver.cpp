@@ -10,11 +10,7 @@ void Driver::writeInitializationCommands() {
 
 }
 
-void Driver::setDisplay(Display* display) {
-	_display = display;
-}
-
-void Driver::begin() {
+void Driver::begin(Display* display) {
 	pinMode(_resetPin, OUTPUT);
 
 	esp_err_t ret;
@@ -24,7 +20,7 @@ void Driver::begin() {
 		.sclk_io_num = SCK,
 		.quadwp_io_num = -1,
 		.quadhd_io_num = -1,
-		.max_transfer_sz = _transactionScanlines * _display->getSize().getWidth() * 2 + 8
+		.max_transfer_sz = _transactionScanlines * display->getSize().getWidth() * 2 + 8
 	};
 
 	spi_device_interface_config_t devcfg = {
@@ -64,7 +60,7 @@ void Driver::begin() {
 	writeInitializationCommands();
 
 	//Allocate memory for the transaction buffer
-	_transactionBufferSize = _display->getSize().getWidth() * _transactionScanlines * sizeof(uint16_t);
+	_transactionBufferSize = display->getSize().getWidth() * _transactionScanlines * sizeof(uint16_t);
 	_transactionBuffer = (uint16_t*) heap_caps_malloc(_transactionBufferSize, MALLOC_CAP_DMA);
 	assert(_transactionBuffer != nullptr);
 }
@@ -101,7 +97,7 @@ void Driver::SPIPreTransferCallback(spi_transaction_t *transaction) {
 	gpio_set_level((gpio_num_t) 16, DCValue);
 }
 
-void Driver::flushTransactionBuffer(int y) {
+void Driver::flushTransactionBuffer(Display* display, int y) {
 	//Transaction descriptors. Declared static, so they're not allocated on the stack; we need this memory even when this
 	//function is finished because the SPI driver needs access to it even while we're already calculating the next line.
 	static spi_transaction_t transactions[6];
@@ -129,8 +125,8 @@ void Driver::flushTransactionBuffer(int y) {
 
 	transactions[1].tx_data[0] = 0;            //Start Col High
 	transactions[1].tx_data[1] = 0;            //Start Col Low
-	transactions[1].tx_data[2] = (_display->getSize().getWidth() - 1) >> 8;   //End Col High
-	transactions[1].tx_data[3] = (_display->getSize().getWidth() - 1) & 0xff; //End Col Low
+	transactions[1].tx_data[2] = (display->getSize().getWidth() - 1) >> 8;   //End Col High
+	transactions[1].tx_data[3] = (display->getSize().getWidth() - 1) & 0xff; //End Col Low
 
 	transactions[2].tx_data[0] = 0x2B;         //Page address set
 
@@ -142,7 +138,7 @@ void Driver::flushTransactionBuffer(int y) {
 	transactions[4].tx_data[0] = 0x2C;         //memory write
 
 	transactions[5].tx_buffer = _transactionBuffer;      //finally send the line data
-	transactions[5].length = _display->getSize().getWidth() * _transactionScanlines * 2 * 8;  //Data length, in bits
+	transactions[5].length = display->getSize().getWidth() * _transactionScanlines * 2 * 8;  //Data length, in bits
 	transactions[5].flags = 0; //undo SPI_TRANS_USE_TXDATA flag
 
 	// Enqueue all transactions

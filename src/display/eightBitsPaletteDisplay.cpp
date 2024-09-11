@@ -18,7 +18,7 @@ void EightBitsPaletteDisplay::flush() {
 		for (size_t i = 0; i < pixelCount; i++)
 			getDriver()->getTransactionBuffer()[i] = _palette[_buffer[bufferIndex++]];
 
-		getDriver()->flushTransactionBuffer(y);
+		getDriver()->flushTransactionBuffer(this, y);
 	}
 }
 
