@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdlib>
+#include "../point.h"
+#include "../size.h"
 
 class Display;
 
@@ -23,19 +25,11 @@ class Buffer {
 template<typename TValue>
 class TypedBuffer : public Buffer {
 	public:
-		virtual void clear(TValue value);
-		virtual void renderPixel(int32_t x, int32_t y, TValue value);
+		virtual void clear(TValue value) = 0;
+		virtual void renderPixel(const Point &point, TValue value) = 0;
+		virtual void renderHorizontalLine(int32_t x, uint16_t width, TValue value) = 0;
+		virtual void renderFilledRectangle(const Point &point, const Size& size, TValue value) = 0;
 
 	private:
 
 };
-
-template<typename TValue>
-void TypedBuffer<TValue>::clear(TValue value) {
-
-}
-
-template<typename TValue>
-void TypedBuffer<TValue>::renderPixel(int32_t x, int32_t y, TValue value) {
-
-}

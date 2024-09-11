@@ -14,9 +14,7 @@ EightBitsPaletteBuffer buffer;
 Display display = Display(
 	&driver,
 	&buffer,
-
-	320,
-	240
+	Size(320, 240)
 );
 
 void setup() {
@@ -28,12 +26,12 @@ void setup() {
 	digitalWrite(4, HIGH);
 
 	// Display
-	Serial.println("Beginning display");
+	Serial.println("Updating palette");
 
 	uint8_t govno = 0;
 
 	for (int i = 0; i < 16; i++) {
-		buffer.setPaletteColor(i, to16Bit(RgbColor(govno, govno, govno)));
+		buffer.setPaletteColor(i, Color24(govno, govno, govno).toUint16());
 		govno += 0x11;
 	}
 
@@ -49,9 +47,9 @@ void loop() {
 
 	buffer.clear(color);
 
-//	for (int32_t y = 0; y < display.getHeight(); y++) {
-//		for (int32_t x = 0; x < display.getWidth(); x++) {
-//			buffer.renderPixel(x, y, color);
+//	for (int32_t y = 0; y < display.getSize().getHeight(); y++) {
+//		for (int32_t x = 0; x < display.getSize().getWidth(); x++) {
+//			buffer.renderPixel(Point(x, y), color);
 //		}
 //	}
 
@@ -75,5 +73,5 @@ void loop() {
 	if (delta < desiredTime)
 		delay(desiredTime - delta);
 
-//	delay(100);
+	delay(1000);
 }

@@ -3,31 +3,21 @@
 Display::Display(
 	Driver* driver,
 	Buffer* buffer,
-
-	uint16_t width,
-	uint16_t height
+	const Size& size
 ) :
 	_buffer(buffer),
 	_driver(driver),
-
-	_width(width),
-	_height(height)
+	_size(size)
 {
 	_driver->setDisplay(this);
 	_buffer->setDisplay(this);
 }
 
 void Display::begin() {
+	Serial.printf("size in begin: %d, %d\n", _size.getWidth(), _size.getHeight());
+
 	_driver->begin();
 	_buffer->allocate();
-}
-
-uint16_t Display::getWidth() const {
-	return _width;
-}
-
-uint16_t Display::getHeight() const {
-	return _height;
 }
 
 Buffer* Display::getBuffer() const {
@@ -36,4 +26,8 @@ Buffer* Display::getBuffer() const {
 
 Driver* Display::getDriver() const {
 	return _driver;
+}
+
+const Size& Display::getSize() const {
+	return _size;
 }
