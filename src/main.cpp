@@ -23,10 +23,11 @@ void setup() {
 	Serial.begin(115200);
 
 	// Transceiver
-	Serial.println("Offing Transceiver");
+	Serial.println("Disabling Transceiver");
 	pinMode(4, OUTPUT);
 	digitalWrite(4, HIGH);
 
+	// Display
 	Serial.println("Beginning display");
 
 	uint8_t govno = 0;
@@ -36,9 +37,8 @@ void setup() {
 		govno += 0x11;
 	}
 
+	Serial.println("Beginning display");
 	display.begin();
-
-	Serial.println("Draw");
 }
 
 int32_t color = 0;
@@ -70,6 +70,10 @@ void loop() {
 
 	auto delta = esp_timer_get_time() - startTime;
 	Serial.printf("FPS: %lld, color: %d, free heap: %d kb, max alloc heap: %d kb\n", 60000000 / delta, color, ESP.getFreeHeap() / 1024, ESP.getMaxAllocHeap() / 1024);
+
+	uint32_t desiredTime = 1000 / 60;
+	if (delta < desiredTime)
+		delay(desiredTime - delta);
 
 //	delay(100);
 }

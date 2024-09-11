@@ -61,13 +61,9 @@ void Driver::begin() {
 	gpio_set_level((gpio_num_t) _resetPin, 1);
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 
-	Serial.println("writeInitializationCommands()");
-
 	writeInitializationCommands();
 
-	//Allocate memory for the pixel buffers
-	Serial.println("heap_caps_malloc()");
-
+	//Allocate memory for the transaction buffer
 	_transactionBufferSize = _display->getWidth() * _transactionScanlines * sizeof(uint16_t);
 	_transactionBuffer = (uint16_t*) heap_caps_malloc(_transactionBufferSize, MALLOC_CAP_DMA);
 	assert(_transactionBuffer != nullptr);
@@ -105,13 +101,13 @@ void Driver::SPIPreTransferCallback(spi_transaction_t *transaction) {
 	gpio_set_level((gpio_num_t) 16, DCValue);
 }
 
-void Driver::pushTransactions(int ypos) {
+void Driver::flushTransactionBuffer(int y) {
 	//Transaction descriptors. Declared static, so they're not allocated on the stack; we need this memory even when this
 	//function is finished because the SPI driver needs access to it even while we're already calculating the next line.
 	static spi_transaction_t transactions[6];
 
-	//In theory, it's better to initialize trans and data only once and hang on to the initialized
-	//variables. We allocate them on the stack, so we need to re-init them each call.
+	// In theory, it's better to initialize trans and data only once and hang on to the initialized
+	// variables. We allocate them on the stack, so we need to re-init them each call.
 	for (uint8_t i = 0; i < 6; i++) {
 		memset(&transactions[i], 0, sizeof(spi_transaction_t));
 
@@ -121,7 +117,7 @@ void Driver::pushTransactions(int ypos) {
 			transactions[i].user = (void*) 0;
 		}
 		else {
-			//Odd transfers are data
+			// Odd transfers are data
 			transactions[i].length = 8 * 4;
 			transactions[i].user = (void*) 1;
 		}
@@ -138,10 +134,10 @@ void Driver::pushTransactions(int ypos) {
 
 	transactions[2].tx_data[0] = 0x2B;         //Page address set
 
-	transactions[3].tx_data[0] = ypos >> 8;    //Start page high
-	transactions[3].tx_data[1] = ypos & 0xff;  //start page low
-	transactions[3].tx_data[2] = (ypos + _transactionScanlines - 1) >> 8; //end page high
-	transactions[3].tx_data[3] = (ypos + _transactionScanlines - 1) & 0xff; //end page low
+	transactions[3].tx_data[0] = y >> 8;    //Start page high
+	transactions[3].tx_data[1] = y & 0xff;  //start page low
+	transactions[3].tx_data[2] = (y + _transactionScanlines - 1) >> 8; //end page high
+	transactions[3].tx_data[3] = (y + _transactionScanlines - 1) & 0xff; //end page low
 
 	transactions[4].tx_data[0] = 0x2C;         //memory write
 
@@ -183,16 +179,6 @@ uint16_t *Driver::getTransactionBuffer() const {
 
 size_t Driver::getTransactionBufferSize() const {
 	return _transactionBufferSize;
-}
-
-void Driver::pushTransactions(const std::function<void()> &iterator) {
-	for (int transactionY = 0; transactionY < _display->getHeight(); transactionY += _transactionScanlines) {
-		// pizda...
-		iterator();
-
-		// Showing data on display
-		pushTransactions(transactionY);
-	}
 }
 
 void Driver::sendCommandAndData(uint8_t command, const uint8_t *data, int length) {

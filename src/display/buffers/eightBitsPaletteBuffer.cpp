@@ -11,18 +11,18 @@ void EightBitsPaletteBuffer::renderPixel(int32_t x, int32_t y, uint8_t paletteIn
 }
 
 void EightBitsPaletteBuffer::flush() {
-	size_t pixelsToCopy = _display->getWidth() * _display->getDriver()->getTransactionScanlines();
+	const size_t pixelCount = _display->getWidth() * _display->getDriver()->getTransactionScanlines();
 	size_t bufferIndex = 0;
 
-	auto transactionBuffer = _display->getDriver()->getTransactionBuffer();
+	for (uint16_t y = 0; y < _display->getHeight(); y += _display->getDriver()->getTransactionScanlines()) {
+		for (size_t i = 0; i < pixelCount; i++)
+			_display->getDriver()->getTransactionBuffer()[i] = _palette[_buffer[bufferIndex++]];
 
-	_display->getDriver()->pushTransactions([&]() {
-		for (size_t i = 0; i < pixelsToCopy; i++) {
-			transactionBuffer[i] = _palette[_buffer[bufferIndex++]];
-		}
-	});
+		_display->getDriver()->flushTransactionBuffer(y);
+	}
 }
 
-size_t EightBitsPaletteBuffer::calculateBufferLength() {
-	return _display->getWidth() * _display->getHeight();
+void EightBitsPaletteBuffer::allocate() {
+	_bufferLength = _display->getWidth() * _display->getHeight();
+	_buffer = new uint8_t[_bufferLength];
 }

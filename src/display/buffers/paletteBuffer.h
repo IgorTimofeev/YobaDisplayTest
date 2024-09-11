@@ -13,36 +13,36 @@ enum class ColorDepth : uint8_t {
 	ThirtyTwo = 32
 };
 
-template<typename TColor>
-class PaletteBuffer : public TypedBuffer<TColor> {
+template<typename TValue>
+class PaletteBuffer : public TypedBuffer<TValue> {
 	public:
 		explicit PaletteBuffer(uint16_t *palette);
 
-		void setPaletteColor(size_t index, uint16_t value);
+		void setPaletteColor(TValue index, uint16_t value);
 
-		void clear(TColor paletteIndex) override;
-		void renderPixel(int32_t x, int32_t y, TColor value) override;
+		void clear(TValue paletteIndex) override;
+		void renderPixel(int32_t x, int32_t y, TValue value) override;
 
 	protected:
 		uint16_t* _palette;
 };
 
-template<typename TColor>
-PaletteBuffer<TColor>::PaletteBuffer(uint16_t *palette) : _palette(palette)  {
+template<typename TValue>
+PaletteBuffer<TValue>::PaletteBuffer(uint16_t *palette) : _palette(palette)  {
 
 }
 
-template<typename TColor>
-void PaletteBuffer<TColor>::setPaletteColor(size_t index, uint16_t value) {
+template<typename TValue>
+void PaletteBuffer<TValue>::setPaletteColor(TValue index, uint16_t value) {
 	_palette[index] = value;
 }
 
-template<typename TColor>
-void PaletteBuffer<TColor>::clear(TColor paletteIndex) {
+template<typename TValue>
+void PaletteBuffer<TValue>::clear(TValue paletteIndex) {
 	memset((uint16_t*) this->_buffer, (int) paletteIndex, this->_bufferLength);
 }
 
-template<typename TColor>
-void PaletteBuffer<TColor>::renderPixel(int32_t x, int32_t y, TColor value) {
+template<typename TValue>
+void PaletteBuffer<TValue>::renderPixel(int32_t x, int32_t y, TValue value) {
 
 }

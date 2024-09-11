@@ -19,6 +19,7 @@ Display::Display(
 
 void Display::begin() {
 	_driver->begin();
+	_buffer->allocate();
 }
 
 uint16_t Display::getWidth() const {

@@ -49,10 +49,7 @@ class Driver {
 		 * sent faster (compared to calling spi_device_transmit several times), and at
 		 * the mean while the lines for next transactions can get calculated.
 		 */
-		void pushTransactions(int ypos);
-
-		void pushTransactions(const std::function<void()>& iterator);
-
+		void flushTransactionBuffer(int y);
 		uint8_t getTransactionScanlines() const;
 		uint16_t *getTransactionBuffer() const;
 		size_t getTransactionBufferSize() const;
