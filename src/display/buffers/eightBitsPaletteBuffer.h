@@ -1,7 +1,7 @@
 #pragma once
 
 #include "paletteBuffer.h"
-#include "../display.h"
+#include "display/display.h"
 
 class EightBitsPaletteBuffer : public PaletteBuffer<uint8_t> {
 	public:
