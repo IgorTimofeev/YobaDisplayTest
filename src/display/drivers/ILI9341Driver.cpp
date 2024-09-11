@@ -1,14 +1,12 @@
 #include "ILI9341Driver.h"
 #include "display/display.h"
 
-ILI9341Driver::ILI9341Driver(
-	uint8_t chipSelectPin,
-	uint8_t dataCommandPin,
-	uint8_t resetPin,
+ILI9341DriverSettings::ILI9341DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : DriverSettings(chipSelectPin, dataCommandPin, resetPin) {
+	_SPIFrequency = SPI_MASTER_FREQ_20M;
+	_transactionBufferHeight = 40;
+}
 
-	int32_t SPIFrequency,
-	uint8_t transactionBufferHeight
-) : Driver(chipSelectPin, dataCommandPin, resetPin, SPIFrequency, transactionBufferHeight) {
+ILI9341Driver::ILI9341Driver(const ILI9341DriverSettings& settings) : Driver(settings) {
 
 }
 

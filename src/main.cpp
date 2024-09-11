@@ -5,9 +5,11 @@
 #include "display/color.h"
 
 ILI9341Driver driver = ILI9341Driver(
-	5,
-	16,
-	17
+	ILI9341DriverSettings(
+		5,
+		16,
+		17
+	)
 );
 
 EightBitsPaletteDisplay display = EightBitsPaletteDisplay(

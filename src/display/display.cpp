@@ -6,7 +6,7 @@ Display::Display(
 	const Size& resolution
 ) :
 	_driver(driver),
-	_resolution(resolution)
+	_size(resolution)
 {
 	resetViewport();
 }
@@ -24,8 +24,8 @@ Driver* Display::getDriver() const {
 	return _driver;
 }
 
-const Size& Display::getResolution() const {
-	return _resolution;
+const Size& Display::getSize() const {
+	return _size;
 }
 
 Bounds &Display::getViewport() {
@@ -35,15 +35,15 @@ Bounds &Display::getViewport() {
 void Display::resetViewport() {
 	_viewport.setX(0);
 	_viewport.setY(0);
-	_viewport.setWidth(_resolution.getWidth());
-	_viewport.setHeight(_resolution.getHeight());
+	_viewport.setWidth(_size.getWidth());
+	_viewport.setHeight(_size.getHeight());
 }
 
 size_t Display::getIndex(uint16_t x, uint16_t y) const {
-	return y * getResolution().getWidth() + x;
+	return y * getSize().getWidth() + x;
 }
 
-size_t Display::getIndex(const Point &point) {
+size_t Display::getIndex(const Point &point) const {
 	return getIndex(point.getX(), point.getY());
 }
 

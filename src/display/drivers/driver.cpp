@@ -2,12 +2,50 @@
 #include "Arduino.h"
 #include "display/display.h"
 
-Driver::Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin, int32_t SPIFrequency, uint8_t transactionBufferHeight) :
-	_chipSelectPin(chipSelectPin),
-	_dataCommandPin(dataCommandPin),
-	_resetPin(resetPin),
-	_SPIFrequency(SPIFrequency),
-	_transactionBufferHeight(transactionBufferHeight)
+DriverSettings::DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : _chipSelectPin(chipSelectPin), _dataCommandPin(dataCommandPin), _resetPin(resetPin) {}
+
+uint8_t DriverSettings::getChipSelectPin() const {
+	return _chipSelectPin;
+}
+
+void DriverSettings::setChipSelectPin(uint8_t chipSelectPin) {
+	_chipSelectPin = chipSelectPin;
+}
+
+uint8_t DriverSettings::getDataCommandPin() const {
+	return _dataCommandPin;
+}
+
+void DriverSettings::setDataCommandPin(uint8_t dataCommandPin) {
+	_dataCommandPin = dataCommandPin;
+}
+
+int8_t DriverSettings::getResetPin() const {
+	return _resetPin;
+}
+
+void DriverSettings::setResetPin(int8_t resetPin) {
+	_resetPin = resetPin;
+}
+
+int32_t DriverSettings::getSPIFrequency() const {
+	return _SPIFrequency;
+}
+
+void DriverSettings::setSPIFrequency(int32_t spiFrequency) {
+	_SPIFrequency = spiFrequency;
+}
+
+uint8_t DriverSettings::getTransactionBufferHeight() const {
+	return _transactionBufferHeight;
+}
+
+void DriverSettings::setTransactionBufferHeight(uint8_t transactionBufferHeight) {
+	_transactionBufferHeight = transactionBufferHeight;
+}
+
+Driver::Driver(const DriverSettings& settings) :
+	_settings(settings)
 {
 
 }
@@ -17,22 +55,19 @@ void Driver::writeInitializationCommands() {
 }
 
 void Driver::begin(Display* display) {
-	pinMode(_resetPin, OUTPUT);
-
-	esp_err_t ret;
 	spi_bus_config_t busConfig = {
 		.mosi_io_num = MOSI,
 		.miso_io_num = MISO,
 		.sclk_io_num = SCK,
 		.quadwp_io_num = -1,
 		.quadhd_io_num = -1,
-		.max_transfer_sz = _transactionBufferHeight * display->getResolution().getWidth() * 2 + 8
+		.max_transfer_sz = _settings.getTransactionBufferHeight() * display->getSize().getWidth() * 2 + 8
 	};
 
 	spi_device_interface_config_t deviceConfig = {
 		.mode = 0,                              //SPI mode 0
-		.clock_speed_hz = _SPIFrequency,     //Clock out at required MHz
-		.spics_io_num = _chipSelectPin,             //CS pin
+		.clock_speed_hz = _settings.getSPIFrequency(),     //Clock out at required MHz
+		.spics_io_num = _settings.getChipSelectPin(),             //CS pin
 		.queue_size = 7,                        //We want to be able to queue 7 transactions at a time
 		.pre_cb = SPIPreCallback, //Specify pre-transfer callback to handle D/C line
 	};
@@ -40,35 +75,40 @@ void Driver::begin(Display* display) {
 	//Initialize the SPI bus
 	auto SPIHost = SPI2_HOST;
 
-	ret = spi_bus_initialize(SPIHost, &busConfig, SPI_DMA_CH_AUTO);
-	ESP_ERROR_CHECK(ret);
+	esp_err_t result = spi_bus_initialize(SPIHost, &busConfig, SPI_DMA_CH_AUTO);
+	ESP_ERROR_CHECK(result);
 
 	//Attach the LCD to the SPI bus
-	ret = spi_bus_add_device(SPIHost, &deviceConfig, &_spi);
-	ESP_ERROR_CHECK(ret);
-
-	//Initialize the LCD
+	result = spi_bus_add_device(SPIHost, &deviceConfig, &_spi);
+	ESP_ERROR_CHECK(result);
 
 	//Initialize non-SPI GPIOs
+	uint64_t gpioConfigPinMask = 1ULL << _settings.getDataCommandPin();
+
+	if (_settings.getResetPin() >= 0)
+		gpioConfigPinMask |= 1ULL << _settings.getResetPin();
+
 	gpio_config_t gpioConfig {
-		.pin_bit_mask = ((1ULL << _dataCommandPin) | (1ULL << _resetPin)),
+		.pin_bit_mask = gpioConfigPinMask,
 		.mode = GPIO_MODE_OUTPUT,
 		.pull_up_en = GPIO_PULLUP_ENABLE
 	};
 
 	gpio_config(&gpioConfig);
 
-	// Reset the display
-	gpio_set_level((gpio_num_t) _resetPin, 0);
-	vTaskDelay(100 / portTICK_PERIOD_MS);
+	// Toggle reset pin if it was defined
+	if (_settings.getResetPin() >= 0) {
+		gpio_set_level((gpio_num_t) _settings.getResetPin(), 0);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
 
-	gpio_set_level((gpio_num_t) _resetPin, 1);
-	vTaskDelay(100 / portTICK_PERIOD_MS);
+		gpio_set_level((gpio_num_t) _settings.getResetPin(), 1);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
+	}
 
 	writeInitializationCommands();
 
 	//Allocate memory for the transaction buffer
-	_transactionBufferLength = display->getResolution().getWidth() * _transactionBufferHeight * 2;
+	_transactionBufferLength = display->getSize().getWidth() * _settings.getTransactionBufferHeight() * 2;
 	_transactionBuffer = (uint16_t*) heap_caps_malloc(_transactionBufferLength, MALLOC_CAP_DMA);
 	assert(_transactionBuffer != nullptr);
 }
@@ -133,20 +173,20 @@ void Driver::flushTransactionBuffer(Display* display, int y) {
 
 	transactions[1].tx_data[0] = 0;            //Start Col High
 	transactions[1].tx_data[1] = 0;            //Start Col Low
-	transactions[1].tx_data[2] = (display->getResolution().getWidth() - 1) >> 8;   //End Col High
-	transactions[1].tx_data[3] = (display->getResolution().getWidth() - 1) & 0xff; //End Col Low
+	transactions[1].tx_data[2] = (display->getSize().getWidth() - 1) >> 8;   //End Col High
+	transactions[1].tx_data[3] = (display->getSize().getWidth() - 1) & 0xff; //End Col Low
 
 	transactions[2].tx_data[0] = 0x2B;         //Page address set
 
 	transactions[3].tx_data[0] = y >> 8;    //Start page high
 	transactions[3].tx_data[1] = y & 0xff;  //start page low
-	transactions[3].tx_data[2] = (y + _transactionBufferHeight - 1) >> 8; //end page high
-	transactions[3].tx_data[3] = (y + _transactionBufferHeight - 1) & 0xff; //end page low
+	transactions[3].tx_data[2] = (y + _settings.getTransactionBufferHeight() - 1) >> 8; //end page high
+	transactions[3].tx_data[3] = (y + _settings.getTransactionBufferHeight() - 1) & 0xff; //end page low
 
 	transactions[4].tx_data[0] = 0x2C;         //memory write
 
 	transactions[5].tx_buffer = _transactionBuffer;      //finally send the line data
-	transactions[5].length = display->getResolution().getWidth() * _transactionBufferHeight * 2 * 8;  //Data length, in bits
+	transactions[5].length = display->getSize().getWidth() * _settings.getTransactionBufferHeight() * 2 * 8;  //Data length, in bits
 	transactions[5].flags = 0; //undo SPI_TRANS_USE_TXDATA flag
 
 	// Enqueue all transactions
@@ -181,13 +221,13 @@ size_t Driver::getTransactionBufferLength() const {
 	return _transactionBufferLength;
 }
 
-uint8_t Driver::getTransactionBufferHeight() const {
-	return _transactionBufferHeight;
-}
-
 void Driver::sendCommandAndData(uint8_t command, const uint8_t *data, int length) {
 	sendCommand(command);
 	sendData(data, length);
+}
+
+const DriverSettings &Driver::getSettings() const {
+	return _settings;
 }
 
 DriverSPIPreCallbackUserData::DriverSPIPreCallbackUserData(Driver *driver, bool dataCommandPinState) : driver(driver), dataCommandPinState(dataCommandPinState) {}

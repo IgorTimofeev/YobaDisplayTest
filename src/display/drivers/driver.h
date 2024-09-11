@@ -7,9 +7,40 @@
 
 class Display;
 
+class DriverSettings {
+	public:
+		DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin);
+
+		uint8_t getChipSelectPin() const;
+		void setChipSelectPin(uint8_t chipSelectPin);
+
+		uint8_t getDataCommandPin() const;
+		void setDataCommandPin(uint8_t dataCommandPin);
+
+		int8_t getResetPin() const;
+		void setResetPin(int8_t resetPin);
+
+		int32_t getSPIFrequency() const;
+		void setSPIFrequency(int32_t spiFrequency);
+
+		uint8_t getTransactionBufferHeight() const;
+
+		// To speed up transfers, every SPI transfer sends a bunch of lines. This define specifies how many. More means more memory use,
+		// but less overhead for setting up / finishing transfers. Make sure screen height is dividable by this.
+		void setTransactionBufferHeight(uint8_t transactionBufferHeight);
+
+	protected:
+		uint8_t _chipSelectPin;
+		uint8_t _dataCommandPin;
+		int8_t _resetPin;
+
+		int32_t _SPIFrequency = SPI_MASTER_FREQ_20M;
+		uint8_t _transactionBufferHeight = 20;
+};
+
 class Driver {
 	public:
-		Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin, int32_t SPIFrequency, uint8_t transactionBufferHeight);
+		explicit Driver(const DriverSettings& settings);
 
 		void begin(Display *display);
 
@@ -49,21 +80,12 @@ class Driver {
 		void flushTransactionBuffer(Display *display, int y);
 		uint16_t *getTransactionBuffer() const;
 		size_t getTransactionBufferLength() const;
-
-		uint8_t getTransactionBufferHeight() const;
+		const DriverSettings& getSettings() const;
 
 	protected:
-		uint8_t _chipSelectPin;
-		uint8_t _dataCommandPin;
-		uint8_t _resetPin;
-		int32_t _SPIFrequency;
-
+		const DriverSettings _settings;
 
 		spi_device_handle_t _spi;
-
-		//To speed up transfers, every SPI transfer sends a bunch of lines. This define specifies how many. More means more memory use,
-		//but less overhead for setting up / finishing transfers. Make sure 240 is dividable by this.
-		uint8_t _transactionBufferHeight = 20;
 		uint16_t* _transactionBuffer = nullptr;
 		size_t _transactionBufferLength = 0;
 };

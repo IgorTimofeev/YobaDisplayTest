@@ -17,7 +17,7 @@ class Display {
 
 		Driver* getDriver() const;
 
-		const Size &getResolution() const;
+		const Size &getSize() const;
 
 		Bounds& getViewport();
 		void resetViewport();
@@ -26,7 +26,7 @@ class Display {
 		virtual void flush() = 0;
 
 		size_t getIndex(uint16_t x, uint16_t y) const;
-		size_t getIndex(const Point& point);
+		size_t getIndex(const Point& point) const;
 
 	protected:
 		Driver* _driver;
@@ -34,6 +34,6 @@ class Display {
 		uint8_t* _buffer = nullptr;
 		size_t _bufferLength = 0;
 
-		const Size _resolution;
+		const Size _size;
 		Bounds _viewport = Bounds();
 };

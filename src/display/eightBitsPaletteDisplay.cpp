@@ -6,15 +6,15 @@ EightBitsPaletteDisplay::EightBitsPaletteDisplay(Driver *driver, const Size& res
 }
 
 void EightBitsPaletteDisplay::allocate() {
-	_bufferLength = getResolution().getWidth() * getResolution().getHeight();
+	_bufferLength = getSize().getWidth() * getSize().getHeight();
 	_buffer = new uint8_t[_bufferLength];
 }
 
 void EightBitsPaletteDisplay::flush() {
-	const size_t pixelCount = getResolution().getWidth() * _driver->getTransactionBufferHeight();
+	const size_t pixelCount = getSize().getWidth() * _driver->getSettings().getTransactionBufferHeight();
 	size_t bufferIndex = 0;
 
-	for (uint16_t y = 0; y < getResolution().getHeight(); y += _driver->getTransactionBufferHeight()) {
+	for (uint16_t y = 0; y < getSize().getHeight(); y += _driver->getSettings().getTransactionBufferHeight()) {
 		for (size_t i = 0; i < pixelCount; i++)
 			_driver->getTransactionBuffer()[i] = _palette[_buffer[bufferIndex++]];
 
@@ -35,5 +35,5 @@ void EightBitsPaletteDisplay::renderFilledRectangleUnchecked(const Bounds& bound
 	uint16_t y2 = bounds.getY2();
 
 	for (uint16_t y = bounds.getY(); y < y2; y++)
-		memset(bufferPtr += getResolution().getWidth(), paletteIndex, bounds.getWidth());
+		memset(bufferPtr += getSize().getWidth(), paletteIndex, bounds.getWidth());
 }
