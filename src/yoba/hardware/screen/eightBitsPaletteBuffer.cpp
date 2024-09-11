@@ -1,16 +1,16 @@
-#include "eightBitsPaletteDisplay.h"
-#include "display/bounds.h"
+#include "eightBitsPaletteBuffer.h"
+#include "yoba/bounds.h"
 
-EightBitsPaletteDisplay::EightBitsPaletteDisplay(Driver *driver, const Size& resolution) : PaletteDisplay<uint8_t>(driver, resolution, _govnoPalette) {
+EightBitsPaletteBuffer::EightBitsPaletteBuffer(Driver *driver, const Size& resolution) : PaletteBuffer<uint8_t>(driver, resolution, _govnoPalette) {
 
 }
 
-void EightBitsPaletteDisplay::allocate() {
+void EightBitsPaletteBuffer::allocate() {
 	_bufferLength = getSize().getWidth() * getSize().getHeight();
 	_buffer = new uint8_t[_bufferLength];
 }
 
-void EightBitsPaletteDisplay::flush() {
+void EightBitsPaletteBuffer::flush() {
 	const size_t pixelCount = getSize().getWidth() * _driver->getSettings().getTransactionBufferHeight();
 	size_t bufferIndex = 0;
 
@@ -22,15 +22,15 @@ void EightBitsPaletteDisplay::flush() {
 	}
 }
 
-void EightBitsPaletteDisplay::renderPixelUnchecked(const Point &point, uint8_t paletteIndex) {
+void EightBitsPaletteBuffer::renderPixelUnchecked(const Point &point, uint8_t paletteIndex) {
 	_buffer[getIndex(point)] = paletteIndex;
 }
 
-void EightBitsPaletteDisplay::renderHorizontalLineUnchecked(const Point &point, uint16_t width, uint8_t paletteIndex) {
+void EightBitsPaletteBuffer::renderHorizontalLineUnchecked(const Point &point, uint16_t width, uint8_t paletteIndex) {
 	memset(_buffer + getIndex(point), paletteIndex, width);
 }
 
-void EightBitsPaletteDisplay::renderFilledRectangleUnchecked(const Bounds& bounds, uint8_t paletteIndex) {
+void EightBitsPaletteBuffer::renderFilledRectangleUnchecked(const Bounds& bounds, uint8_t paletteIndex) {
 	uint8_t* bufferPtr = _buffer + getIndex(bounds.getTopLeft());
 	uint16_t y2 = bounds.getY2();
 

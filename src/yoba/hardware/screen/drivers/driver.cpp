@@ -1,6 +1,6 @@
 #include "driver.h"
 #include "Arduino.h"
-#include "display/display.h"
+#include "yoba/hardware/screen/buffer.h"
 
 DriverSettings::DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : _chipSelectPin(chipSelectPin), _dataCommandPin(dataCommandPin), _resetPin(resetPin) {}
 
@@ -54,7 +54,7 @@ void Driver::writeInitializationCommands() {
 
 }
 
-void Driver::begin(Display* display) {
+void Driver::begin(Buffer* display) {
 	spi_bus_config_t busConfig = {
 		.mosi_io_num = MOSI,
 		.miso_io_num = MISO,
@@ -145,7 +145,7 @@ void Driver::SPIPreCallback(spi_transaction_t *transaction) {
 	delete userData;
 }
 
-void Driver::flushTransactionBuffer(Display* display, int y) {
+void Driver::flushTransactionBuffer(Buffer* display, int y) {
 	//Transaction descriptors. Declared static, so they're not allocated on the stack; we need this memory even when this
 	//function is finished because the SPI driver needs access to it even while we're already calculating the next line.
 	static spi_transaction_t transactions[6];

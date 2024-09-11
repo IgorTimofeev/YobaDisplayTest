@@ -1,5 +1,5 @@
 #include "ILI9341Driver.h"
-#include "display/display.h"
+#include "yoba/hardware/screen/buffer.h"
 
 ILI9341DriverSettings::ILI9341DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : DriverSettings(chipSelectPin, dataCommandPin, resetPin) {
 	_SPIFrequency = SPI_MASTER_FREQ_20M;

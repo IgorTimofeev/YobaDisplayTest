@@ -1,11 +1,9 @@
 #pragma once
 
-
 #include <cstdint>
 #include <driver/spi_master.h>
-#include <functional>
 
-class Display;
+class Buffer;
 
 class DriverSettings {
 	public:
@@ -42,7 +40,7 @@ class Driver {
 	public:
 		explicit Driver(const DriverSettings& settings);
 
-		void begin(Display *display);
+		void begin(Buffer *display);
 
 		virtual void writeInitializationCommands();
 
@@ -77,7 +75,7 @@ class Driver {
 		 * sent faster (compared to calling spi_device_transmit several times), and at
 		 * the mean while the lines for next transactions can get calculated.
 		 */
-		void flushTransactionBuffer(Display *display, int y);
+		void flushTransactionBuffer(Buffer *display, int y);
 		uint16_t *getTransactionBuffer() const;
 		size_t getTransactionBufferLength() const;
 		const DriverSettings& getSettings() const;

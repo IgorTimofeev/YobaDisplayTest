@@ -1,11 +1,11 @@
 #pragma once
 
-#include "paletteDisplay.h"
-#include "display/display.h"
+#include "paletteBuffer.h"
+#include "buffer.h"
 
-class EightBitsPaletteDisplay : public PaletteDisplay<uint8_t> {
+class EightBitsPaletteBuffer : public PaletteBuffer<uint8_t> {
 	public:
-		EightBitsPaletteDisplay(Driver *driver, const Size &resolution);
+		EightBitsPaletteBuffer(Driver *driver, const Size &resolution);
 
 		void allocate() override;
 		void flush() override;

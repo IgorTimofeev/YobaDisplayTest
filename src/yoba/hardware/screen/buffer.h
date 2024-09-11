@@ -1,14 +1,14 @@
 #pragma once
 
 #include <cstdlib>
-#include "point.h"
-#include "size.h"
-#include "bounds.h"
-#include "drivers/driver.h"
+#include "yoba/point.h"
+#include "yoba/size.h"
+#include "yoba/bounds.h"
+#include "yoba/hardware/screen/drivers/driver.h"
 
-class Display {
+class Buffer {
 	public:
-		Display(
+		Buffer(
 			Driver* driver,
 			const Size& resolution
 		);
