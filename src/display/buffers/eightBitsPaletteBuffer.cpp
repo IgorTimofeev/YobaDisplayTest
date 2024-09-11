@@ -6,7 +6,7 @@ EightBitsPaletteBuffer::EightBitsPaletteBuffer() : PaletteBuffer<uint8_t>(_palet
 }
 
 void EightBitsPaletteBuffer::allocate() {
-	_bufferLength =  _display->getSize().getWidth() * _display->getSize().getHeight();
+	_bufferLength = _display->getSize().getWidth() * _display->getSize().getHeight();
 	_buffer = new uint8_t[_bufferLength];
 }
 

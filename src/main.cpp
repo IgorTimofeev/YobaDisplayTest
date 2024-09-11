@@ -82,7 +82,7 @@ void renderPrimitives() {
 	buffer.renderFilledRectangle(Bounds(point.getX(), point.getY() + 15, 100, 30), 18);
 	point.setY(point.getY() + 40);
 
-	pivot.setX(pivot.getX() + 5);
+	pivot.setX(pivot.getX() + 1);
 
 	if (pivot.getX() > display.getViewport().getX2())
 		pivot.setX(0);

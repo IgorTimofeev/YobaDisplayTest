@@ -88,8 +88,8 @@ class Bounds {
 			return
 				point.getX() >= _x
 				&& point.getY() >= _y
-				&& point.getX() <= getX2()
-				&& point.getY() <= getY2();
+				&& point.getX() < getX2()
+				&& point.getY() < getY2();
 		}
 
 		bool intersects(const Bounds& bounds) const {
