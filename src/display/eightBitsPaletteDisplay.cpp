@@ -31,8 +31,9 @@ void EightBitsPaletteDisplay::renderHorizontalLineUnchecked(const Point &point, 
 }
 
 void EightBitsPaletteDisplay::renderFilledRectangleUnchecked(const Bounds& bounds, uint8_t paletteIndex) {
+	uint8_t* bufferPtr = _buffer + getIndex(bounds.getTopLeft());
 	uint16_t y2 = bounds.getY2();
 
 	for (uint16_t y = bounds.getY(); y < y2; y++)
-		renderHorizontalLineUnchecked(Point(bounds.getX(), y), bounds.getWidth(), paletteIndex);
+		memset(bufferPtr += getSize().getWidth(), paletteIndex, bounds.getWidth());
 }

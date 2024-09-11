@@ -84,6 +84,20 @@ class Bounds {
 			return _y + _height / 2;
 		}
 
+		Point getTopLeft() const {
+			return {
+				getX(),
+				getY()
+			};
+		}
+
+		Point getBottomRight() const {
+			return {
+				getX2(),
+				getY2()
+			};
+		}
+
 		bool intersects(const Point& point) const {
 			return
 				point.getX() >= _x
