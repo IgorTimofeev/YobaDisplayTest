@@ -9,15 +9,15 @@ Display::Display(
 	_driver(driver),
 	_size(size)
 {
-	_driver->setDisplay(this);
 	_buffer->setDisplay(this);
+	_driver->setDisplay(this);
+
+	resetViewport();
 }
 
 void Display::begin() {
-	Serial.printf("size in begin: %d, %d\n", _size.getWidth(), _size.getHeight());
-
-	_driver->begin();
 	_buffer->allocate();
+	_driver->begin();
 }
 
 Buffer* Display::getBuffer() const {
@@ -30,4 +30,15 @@ Driver* Display::getDriver() const {
 
 const Size& Display::getSize() const {
 	return _size;
+}
+
+Bounds &Display::getViewport() {
+	return _viewport;
+}
+
+void Display::resetViewport() {
+	_viewport.setX(0);
+	_viewport.setY(0);
+	_viewport.setWidth(_size.getWidth());
+	_viewport.setHeight(_size.getHeight());
 }

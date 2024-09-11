@@ -9,12 +9,21 @@ class Size {
 	public:
 		static const uint16_t calculated = 0xFFFF;
 
+		Size() :
+			_width(0),
+			_height(0)
+		{
+
+		}
+
 		Size(uint16_t width, uint16_t height) :
 			_width(width),
 			_height(height)
 		{
 
 		}
+
+		Size(const Size& size) = default;
 
 		uint16_t getWidth() const {
 			return _width;

@@ -5,12 +5,15 @@
 
 class Point {
 	public:
-		Point() = default;
-		Point(const Point& point) = default;
+		Point() : _x(0), _y(0) {
+
+		}
 
 		Point(int32_t x, int32_t y) : _x(x), _y(y) {
 
 		}
+
+		Point(const Point& point) = default;
 
 		int32_t getX() const {
 			return _x;
@@ -58,6 +61,6 @@ class Point {
 		}
 
 	private:
-		int32_t _x = 0;
-		int32_t _y = 0;
+		int32_t _x;
+		int32_t _y;
 };

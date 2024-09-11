@@ -84,12 +84,32 @@ class Bounds {
 			return _y + _height / 2;
 		}
 
-		bool intersectsWith(Point& point) const {
+		bool intersects(const Point& point) const {
 			return
 				point.getX() >= _x
 				&& point.getY() >= _y
 				&& point.getX() <= getX2()
 				&& point.getY() <= getY2();
+		}
+
+		bool intersects(const Bounds& bounds) const {
+			return !(
+				getX() > bounds.getX2()
+				|| bounds.getX() > getX2()
+				|| getY() > bounds.getY2()
+				|| bounds.getY() > getY2()
+			);
+		}
+
+		Bounds getIntersection(const Bounds& bounds) const {
+			Bounds result = Bounds();
+
+			result.setX(max(getX(), bounds.getX()));
+			result.setY(max(getY(), bounds.getY()));
+			result.setWidth(min(getX2(), bounds.getX2()) - result.getX());
+			result.setHeight(min(getY2(), bounds.getY2()) - result.getY());
+
+			return result;
 		}
 
 	private:

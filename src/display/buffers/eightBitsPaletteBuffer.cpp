@@ -1,4 +1,5 @@
 #include "eightBitsPaletteBuffer.h"
+#include "display/bounds.h"
 
 EightBitsPaletteBuffer::EightBitsPaletteBuffer() : PaletteBuffer<uint8_t>(_palette) {
 
@@ -21,17 +22,17 @@ void EightBitsPaletteBuffer::flush() {
 	}
 }
 
-void EightBitsPaletteBuffer::renderPixel(const Point& point, uint8_t paletteIndex) {
-
-	size_t byteIndex = point.getX() * _display->getSize().getWidth() + point.getY();
-
-	_buffer[byteIndex] = paletteIndex;
+void EightBitsPaletteBuffer::renderPixelUnchecked(const Point &point, uint8_t paletteIndex) {
+	_buffer[getIndex(point)] = paletteIndex;
 }
 
-void EightBitsPaletteBuffer::renderHorizontalLine(int32_t x, uint16_t width, uint8_t value) {
-
+void EightBitsPaletteBuffer::renderHorizontalLineUnchecked(const Point &point, uint16_t width, uint8_t paletteIndex) {
+	memset(_buffer + getIndex(point), paletteIndex, width);
 }
 
-void EightBitsPaletteBuffer::renderFilledRectangle(const Point &point, const Size &size, uint8_t value) {
+void EightBitsPaletteBuffer::renderFilledRectangleUnchecked(const Bounds& bounds, uint8_t paletteIndex) {
+	uint16_t y2 = bounds.getY2();
 
+	for (uint16_t y = bounds.getY(); y < y2; y++)
+		renderHorizontalLineUnchecked(Point(bounds.getX(), y), bounds.getWidth(), paletteIndex);
 }

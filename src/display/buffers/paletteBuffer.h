@@ -2,22 +2,13 @@
 
 #include <cstdlib>
 #include <cstring>
-#include "buffer.h"
-
-enum class ColorDepth : uint8_t {
-	One = 1,
-	Two = 2,
-	Four = 4,
-	Eight = 8,
-	Sixteen = 16,
-	ThirtyTwo = 32
-};
+#include "renderBuffer.h"
 
 template<typename TValue>
-class PaletteBuffer : public TypedBuffer<TValue> {
+class PaletteBuffer : public RenderBuffer<TValue> {
 	public:
 		explicit PaletteBuffer(uint16_t *palette);
-		void setPaletteColor(TValue index, uint16_t value);
+		void setPaletteColor(TValue index, uint16_t color);
 		void clear(TValue paletteIndex) override;
 
 	protected:
@@ -30,8 +21,8 @@ PaletteBuffer<TValue>::PaletteBuffer(uint16_t *palette) : _palette(palette)  {
 }
 
 template<typename TValue>
-void PaletteBuffer<TValue>::setPaletteColor(TValue index, uint16_t value) {
-	_palette[index] = value;
+void PaletteBuffer<TValue>::setPaletteColor(TValue index, uint16_t color) {
+	_palette[index] = color;
 }
 
 template<typename TValue>

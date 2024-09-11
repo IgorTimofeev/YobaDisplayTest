@@ -21,9 +21,15 @@ class Display {
 		Driver* getDriver() const;
 		const Size &getSize() const;
 
+		Bounds& getViewport();
+
+		void resetViewport();
+
 	private:
 		Size _size;
 
 		Buffer* _buffer;
 		Driver* _driver;
+
+		Bounds _viewport = Bounds();
 };
