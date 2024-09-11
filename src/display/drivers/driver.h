@@ -9,12 +9,11 @@ class Display;
 
 class Driver {
 	public:
-		Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin);
+		Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin, int32_t SPIFrequency, uint8_t transactionBufferHeight);
 
 		void begin(Display *display);
 
 		virtual void writeInitializationCommands();
-
 
 		/* Send a command to the LCD. Uses spi_device_polling_transmit, which waits
  * until the transfer is complete.
@@ -51,19 +50,20 @@ class Driver {
 		uint16_t *getTransactionBuffer() const;
 		size_t getTransactionBufferLength() const;
 
-		void setTransactionBufferHeight(uint8_t transactionBufferHeight);
 		uint8_t getTransactionBufferHeight() const;
 
 	protected:
 		uint8_t _chipSelectPin;
 		uint8_t _dataCommandPin;
 		uint8_t _resetPin;
+		int32_t _SPIFrequency;
+
 
 		spi_device_handle_t _spi;
 
 		//To speed up transfers, every SPI transfer sends a bunch of lines. This define specifies how many. More means more memory use,
 		//but less overhead for setting up / finishing transfers. Make sure 240 is dividable by this.
-		uint8_t _transactionBufferHeight = 120;
+		uint8_t _transactionBufferHeight = 20;
 		uint16_t* _transactionBuffer = nullptr;
 		size_t _transactionBufferLength = 0;
 };

@@ -8,8 +8,6 @@ Display::Display(
 	_driver(driver),
 	_resolution(resolution)
 {
-	_driver->setTransactionBufferHeight(_resolution.getHeight() / 10);
-
 	resetViewport();
 }
 

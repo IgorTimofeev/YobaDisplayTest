@@ -2,7 +2,13 @@
 #include "Arduino.h"
 #include "display/display.h"
 
-Driver::Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin) : _chipSelectPin(chipSelectPin), _dataCommandPin(dataCommandPin), _resetPin(resetPin) {
+Driver::Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, uint8_t resetPin, int32_t SPIFrequency, uint8_t transactionBufferHeight) :
+	_chipSelectPin(chipSelectPin),
+	_dataCommandPin(dataCommandPin),
+	_resetPin(resetPin),
+	_SPIFrequency(SPIFrequency),
+	_transactionBufferHeight(transactionBufferHeight)
+{
 
 }
 
@@ -25,7 +31,7 @@ void Driver::begin(Display* display) {
 
 	spi_device_interface_config_t deviceConfig = {
 		.mode = 0,                              //SPI mode 0
-		.clock_speed_hz = SPI_MASTER_FREQ_26M,     //Clock out at required MHz
+		.clock_speed_hz = _SPIFrequency,     //Clock out at required MHz
 		.spics_io_num = _chipSelectPin,             //CS pin
 		.queue_size = 7,                        //We want to be able to queue 7 transactions at a time
 		.pre_cb = SPIPreCallback, //Specify pre-transfer callback to handle D/C line
@@ -44,11 +50,13 @@ void Driver::begin(Display* display) {
 	//Initialize the LCD
 
 	//Initialize non-SPI GPIOs
-	gpio_config_t io_conf = {};
-	io_conf.pin_bit_mask = ((1ULL << _dataCommandPin) | (1ULL << _resetPin));
-	io_conf.mode = GPIO_MODE_OUTPUT;
-	io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
-	gpio_config(&io_conf);
+	gpio_config_t gpioConfig {
+		.pin_bit_mask = ((1ULL << _dataCommandPin) | (1ULL << _resetPin)),
+		.mode = GPIO_MODE_OUTPUT,
+		.pull_up_en = GPIO_PULLUP_ENABLE
+	};
+
+	gpio_config(&gpioConfig);
 
 	// Reset the display
 	gpio_set_level((gpio_num_t) _resetPin, 0);
@@ -60,7 +68,7 @@ void Driver::begin(Display* display) {
 	writeInitializationCommands();
 
 	//Allocate memory for the transaction buffer
-	_transactionBufferLength = display->getResolution().getWidth() * _transactionBufferHeight * sizeof(uint16_t);
+	_transactionBufferLength = display->getResolution().getWidth() * _transactionBufferHeight * 2;
 	_transactionBuffer = (uint16_t*) heap_caps_malloc(_transactionBufferLength, MALLOC_CAP_DMA);
 	assert(_transactionBuffer != nullptr);
 }
@@ -138,7 +146,7 @@ void Driver::flushTransactionBuffer(Display* display, int y) {
 	transactions[4].tx_data[0] = 0x2C;         //memory write
 
 	transactions[5].tx_buffer = _transactionBuffer;      //finally send the line data
-	transactions[5].length = display->getResolution().getWidth() * _transactionBufferHeight * sizeof(uint16_t) * 8;  //Data length, in bits
+	transactions[5].length = display->getResolution().getWidth() * _transactionBufferHeight * 2 * 8;  //Data length, in bits
 	transactions[5].flags = 0; //undo SPI_TRANS_USE_TXDATA flag
 
 	// Enqueue all transactions
@@ -175,10 +183,6 @@ size_t Driver::getTransactionBufferLength() const {
 
 uint8_t Driver::getTransactionBufferHeight() const {
 	return _transactionBufferHeight;
-}
-
-void Driver::setTransactionBufferHeight(uint8_t transactionBufferHeight) {
-	_transactionBufferHeight = transactionBufferHeight;
 }
 
 void Driver::sendCommandAndData(uint8_t command, const uint8_t *data, int length) {
