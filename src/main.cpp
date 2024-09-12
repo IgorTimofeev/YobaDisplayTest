@@ -3,6 +3,7 @@
 #include "yoba/hardware/screen/drivers/ILI9341Driver.h"
 #include "yoba/hardware/screen/eightBitsPaletteBuffer.h"
 #include "yoba/color.h"
+#include "resources/fonts/unscii1616Font.h"
 
 ILI9341Driver driver = ILI9341Driver(ILI9341DriverSettings(
 	5,
@@ -14,6 +15,8 @@ EightBitsPaletteBuffer buffer = EightBitsPaletteBuffer(
 	&driver,
 	Size(320, 240)
 );
+
+Unscii1616Font unsciiFont = Unscii1616Font();
 
 void setup() {
 	Serial.begin(115200);
@@ -74,11 +77,17 @@ void renderPrimitives() {
 	point.setY(point.getY() + 10);
 
 	// Line
-	buffer.renderHorizontalLine(Point(point.getX(), point.getY() + 10), 100, 17);
+	buffer.renderHorizontalLine(point, 100, 17);
 	point.setY(point.getY() + 10);
 
 	// Rect
-	buffer.renderFilledRectangle(Bounds(point.getX(), point.getY() + 15, 100, 30), 18);
+	buffer.renderFilledRectangle(Bounds(point.getX(), point.getY(), 100, 30), 18);
+	point.setY(point.getY() + 40);
+
+	// Text
+	char pizda[255];
+	sprintf(pizda, "Uptime: %.2f s", (float) millis() / 1000.0f);
+	buffer.renderText(point, &unsciiFont, 0, pizda);
 	point.setY(point.getY() + 40);
 
 	pivot.setX(pivot.getX() + 1);
@@ -103,5 +112,5 @@ void loop() {
 	if (deltaTime < desiredDeltaTime)
 		delay(desiredDeltaTime - deltaTime);
 
-	//	delay(1000);
+//	delay(1000);
 }
