@@ -3,7 +3,8 @@
 #include "yoba/hardware/screen/drivers/ILI9341Driver.h"
 #include "yoba/hardware/screen/eightBitsPaletteBuffer.h"
 #include "yoba/color.h"
-#include "resources/fonts/unscii1616Font.h"
+#include "resources/fonts/Unscii16Font.h"
+#include "resources/fonts/Unscii8ThinFont.h"
 
 ILI9341Driver driver = ILI9341Driver(ILI9341DriverSettings(
 	5,
@@ -16,7 +17,8 @@ EightBitsPaletteBuffer buffer = EightBitsPaletteBuffer(
 	Size(320, 240)
 );
 
-Unscii1616Font unsciiFont = Unscii1616Font();
+// Unscii1616Font font = Unscii16Font();
+Unscii8ThinFont font = Unscii8ThinFont();
 
 void setup() {
 	Serial.begin(115200);
@@ -87,7 +89,7 @@ void renderPrimitives() {
 	// Text
 	char pizda[255];
 	sprintf(pizda, "Uptime: %.2f s", (float) millis() / 1000.0f);
-	buffer.renderText(point, &unsciiFont, 0, pizda);
+	buffer.renderText(point, &font, 0, pizda);
 	point.setY(point.getY() + 40);
 
 	pivot.setX(pivot.getX() + 1);

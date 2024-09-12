@@ -1,6 +1,6 @@
-﻿class Unscii1616Font : public Font {
+﻿class Unscii16Font : public Font {
 	public:
-		Unscii1616Font() : Font(
+		Unscii16Font() : Font(
 			32,
 			126,
 			18,
