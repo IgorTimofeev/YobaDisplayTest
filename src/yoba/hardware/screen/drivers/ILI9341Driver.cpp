@@ -3,7 +3,7 @@
 
 ILI9341DriverSettings::ILI9341DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : DriverSettings(chipSelectPin, dataCommandPin, resetPin) {
 	// Glitches & tearing can appear on 26m, 40m+ won't work anyway
-	_SPIFrequency = SPI_MASTER_FREQ_20M;
+	_SPIFrequency = SPI_MASTER_FREQ_26M;
 
 	// This will allocate 320 * 40 = 25600 pixels * 2 bytes per each = 25 KiB of heap,
 	// allowing screen buffer to be flushed in 240 / 40 = 6 equal parts,

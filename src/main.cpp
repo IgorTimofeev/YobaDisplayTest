@@ -98,6 +98,9 @@ void render() {
 	// Rect
 	buffer.renderFilledRectangle(Bounds(pivot.getX(), pivot.getY() + 20, 100, 30), 18);
 
+	// Line
+	buffer.renderLine(Point(pivot.getX(), pivot.getY()), Point(pivot.getX() + 10, pivot.getY() + 130), 16);
+
 	// Text
 	char pizda[255];
 	sprintf(pizda, "Uptime: %.2f s", (float) millis() / 1000.0f);

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "buffer.h"
 #include "../../font.h"
 
@@ -9,9 +10,10 @@ class RenderBuffer : public Buffer {
 
 		void clear(TValue value);
 		void renderPixel(const Point &point, TValue value);
-		void renderHorizontalLine(const Point &point, uint16_t width, TValue value);
-		void renderVerticalLine(const Point &point, uint16_t height, TValue value);
+		void renderHorizontalLine(const Point &point, uint16_t length, TValue value);
+		void renderVerticalLine(const Point &point, uint16_t length, TValue value);
 		void renderFilledRectangle(const Bounds& bounds, TValue value);
+		void renderLine(const Point& from, const Point& to, TValue color);
 		void renderText(const Point& point, Font* font, TValue value, const char* text);
 		Size getTextSize(Font* font, const char* text);
 
@@ -40,12 +42,12 @@ void RenderBuffer<TValue>::renderPixel(const Point &point, TValue value) {
 }
 
 template<typename TValue>
-void RenderBuffer<TValue>::renderHorizontalLine(const Point &point, uint16_t width, TValue value) {
+void RenderBuffer<TValue>::renderHorizontalLine(const Point &point, uint16_t length, TValue value) {
 	const auto& viewport = getViewport();
 
 	if (
 		point.getX() > viewport.getX2()
-		|| point.getX() + width < viewport.getX()
+		|| point.getX() + length < viewport.getX()
 
 		|| point.getY() < viewport.getY()
 		|| point.getY() > viewport.getY2()
@@ -53,14 +55,14 @@ void RenderBuffer<TValue>::renderHorizontalLine(const Point &point, uint16_t wid
 		return;
 
 	uint16_t x1 = max(point.getX(), viewport.getX());
-	uint16_t x2 = min(point.getX() + width - 1, viewport.getX2());
-	width = x2 - x1 + 1;
+	uint16_t x2 = min(point.getX() + length - 1, viewport.getX2());
+	length = x2 - x1 + 1;
 
-	renderHorizontalLineNative(Point(x1, point.getY()), width, value);
+	renderHorizontalLineNative(Point(x1, point.getY()), length, value);
 }
 
 template<typename TValue>
-void RenderBuffer<TValue>::renderVerticalLine(const Point &point, uint16_t height, TValue value) {
+void RenderBuffer<TValue>::renderVerticalLine(const Point &point, uint16_t length, TValue value) {
 	const auto& viewport = getViewport();
 
 	if (
@@ -68,15 +70,115 @@ void RenderBuffer<TValue>::renderVerticalLine(const Point &point, uint16_t heigh
 		|| point.getX() > viewport.getX2()
 
 		|| point.getY() > viewport.getY2()
-		|| point.getY() + height < viewport.getY()
+		|| point.getY() + length < viewport.getY()
 	)
 		return;
 
 	uint16_t y1 = max(point.getY(), viewport.getY());
-	uint16_t y2 = min(point.getY() + height - 1, viewport.getY2());
-	height = y2 - y1 + 1;
+	uint16_t y2 = min(point.getY() + length - 1, viewport.getY2());
+	length = y2 - y1 + 1;
 
-	renderVerticalLineNative(Point(point.getX(), y1), height, value);
+	renderVerticalLineNative(Point(point.getX(), y1), length, value);
+}
+
+template<typename TValue>
+void RenderBuffer<TValue>::renderLine(const Point &from, const Point &to, TValue color) {
+	// Vertical line
+	if (from.getX() == to.getX()) {
+		renderVerticalLine(from, to.getY() - from.getY() + 1, color);
+	}
+	// Horizontal line
+	else if (from.getY() == to.getY()) {
+		renderHorizontalLine(from, to.getX() - from.getX() + 1, color);
+	}
+	// Meh...
+	else {
+		int32_t
+			x1 = from.getX(),
+			y1 = from.getY(),
+
+			x2 = to.getX(),
+			y2 = to.getY();
+
+		bool deltaYGreater = abs(y2 - y1) > abs(x2 - x1);
+
+		if (deltaYGreater) {
+			std::swap(x1, y1);
+			std::swap(x2, y2);
+		}
+
+		if (x1 > x2) {
+			std::swap(x1, x2);
+			std::swap(y1, y2);
+		}
+
+		int32_t
+			deltaX = x2 - x1,
+			deltaY = abs(y2 - y1),
+
+			partRemaining = deltaX,
+			yStep = -1,
+			partX = x1;
+
+		uint16_t partLength = 0;
+
+		if (y1 < y2)
+			yStep = 1;
+
+		// Split into steep and not steep for FastH/V separation
+		if (deltaYGreater) {
+			while (x1 <= x2) {
+				partLength++;
+				partRemaining -= deltaY;
+
+				if (partRemaining < 0) {
+					partRemaining += deltaX;
+
+					if (partLength == 1) {
+						renderPixel(Point(y1, partX), color);
+					}
+					else {
+						renderVerticalLine(Point(y1, partX), partLength, color);
+					}
+
+					partLength = 0;
+					partX = x1 + 1;
+					y1 += yStep;
+				}
+
+				x1++;
+			}
+
+			if (partLength > 0)
+				renderVerticalLine(Point(y1, partX), partLength, color);
+		}
+		else {
+			while (x1 <= x2) {
+				partLength++;
+				partRemaining -= deltaY;
+
+				if (partRemaining < 0) {
+					partRemaining += deltaX;
+
+					if (partLength == 1) {
+						renderPixel(Point(partX, y1), color);
+					}
+					else {
+						renderHorizontalLine(Point(partX, y1), partLength, color);
+					}
+
+					partLength = 0;
+					partX = x1 + 1;
+					y1 += yStep;
+				}
+
+				x1++;
+			}
+
+			if (partLength > 0)
+				renderHorizontalLine(Point(partX, y1), partLength, color);
+		}
+	}
 }
 
 template<typename TValue>
