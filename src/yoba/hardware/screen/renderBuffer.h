@@ -3,46 +3,46 @@
 #include "buffer.h"
 #include "../../font.h"
 
-template<typename TValue>
+template<typename TColor>
 class RenderBuffer : public Buffer {
 	public:
 		RenderBuffer(Driver *driver, const Size &resolution);
 
-		void clear(TValue value);
-		void renderPixel(const Point &point, TValue value);
-		void renderHorizontalLine(const Point &point, uint16_t length, TValue value);
-		void renderVerticalLine(const Point &point, uint16_t length, TValue value);
-		void renderFilledRectangle(const Bounds& bounds, TValue value);
-		void renderLine(const Point& from, const Point& to, TValue color);
-		void renderText(const Point& point, Font* font, TValue value, const char* text);
+		void clear(TColor color);
+		void renderPixel(const Point &point, TColor color);
+		void renderHorizontalLine(const Point &point, uint16_t length, TColor color);
+		void renderVerticalLine(const Point &point, uint16_t length, TColor color);
+		void renderFilledRectangle(const Bounds& bounds, TColor color);
+		void renderLine(const Point& from, const Point& to, TColor color);
+		void renderText(const Point& point, Font* font, TColor color, const char* text);
 		Size getTextSize(Font* font, const char* text);
 
 	protected:
-		virtual void clearNative(TValue value) = 0;
-		virtual void renderPixelNative(const Point &point, TValue value) = 0;
-		virtual void renderVerticalLineNative(const Point &point, uint16_t width, TValue value) = 0;
-		virtual void renderHorizontalLineNative(const Point &point, uint16_t width, TValue value) = 0;
-		virtual void renderFilledRectangleNative(const Bounds& bounds, TValue value) = 0;
+		virtual void clearNative(TColor color) = 0;
+		virtual void renderPixelNative(const Point &point, TColor color) = 0;
+		virtual void renderVerticalLineNative(const Point &point, uint16_t width, TColor color) = 0;
+		virtual void renderHorizontalLineNative(const Point &point, uint16_t width, TColor color) = 0;
+		virtual void renderFilledRectangleNative(const Bounds& bounds, TColor color) = 0;
 };
 
-template<typename TValue>
-RenderBuffer<TValue>::RenderBuffer(Driver *driver, const Size &resolution) : Buffer(driver, resolution) {
+template<typename TColor>
+RenderBuffer<TColor>::RenderBuffer(Driver *driver, const Size &resolution) : Buffer(driver, resolution) {
 
 }
 
-template<typename TValue>
-void RenderBuffer<TValue>::clear(TValue value) {
-	clearNative(value);
+template<typename TColor>
+void RenderBuffer<TColor>::clear(TColor color) {
+	clearNative(color);
 }
 
-template<typename TValue>
-void RenderBuffer<TValue>::renderPixel(const Point &point, TValue value) {
+template<typename TColor>
+void RenderBuffer<TColor>::renderPixel(const Point &point, TColor color) {
 	if (getViewport().intersects(point))
-		renderPixelNative(point, value);
+		renderPixelNative(point, color);
 }
 
-template<typename TValue>
-void RenderBuffer<TValue>::renderHorizontalLine(const Point &point, uint16_t length, TValue value) {
+template<typename TColor>
+void RenderBuffer<TColor>::renderHorizontalLine(const Point &point, uint16_t length, TColor color) {
 	const auto& viewport = getViewport();
 
 	if (
@@ -58,11 +58,11 @@ void RenderBuffer<TValue>::renderHorizontalLine(const Point &point, uint16_t len
 	uint16_t x2 = min(point.getX() + length - 1, viewport.getX2());
 	length = x2 - x1 + 1;
 
-	renderHorizontalLineNative(Point(x1, point.getY()), length, value);
+	renderHorizontalLineNative(Point(x1, point.getY()), length, color);
 }
 
-template<typename TValue>
-void RenderBuffer<TValue>::renderVerticalLine(const Point &point, uint16_t length, TValue value) {
+template<typename TColor>
+void RenderBuffer<TColor>::renderVerticalLine(const Point &point, uint16_t length, TColor color) {
 	const auto& viewport = getViewport();
 
 	if (
@@ -78,11 +78,11 @@ void RenderBuffer<TValue>::renderVerticalLine(const Point &point, uint16_t lengt
 	uint16_t y2 = min(point.getY() + length - 1, viewport.getY2());
 	length = y2 - y1 + 1;
 
-	renderVerticalLineNative(Point(point.getX(), y1), length, value);
+	renderVerticalLineNative(Point(point.getX(), y1), length, color);
 }
 
-template<typename TValue>
-void RenderBuffer<TValue>::renderLine(const Point &from, const Point &to, TValue color) {
+template<typename TColor>
+void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor color) {
 	// Vertical line
 	if (from.getX() == to.getX()) {
 		renderVerticalLine(from, to.getY() - from.getY() + 1, color);
@@ -181,16 +181,16 @@ void RenderBuffer<TValue>::renderLine(const Point &from, const Point &to, TValue
 	}
 }
 
-template<typename TValue>
-void RenderBuffer<TValue>::renderFilledRectangle(const Bounds &bounds, TValue value) {
+template<typename TColor>
+void RenderBuffer<TColor>::renderFilledRectangle(const Bounds &bounds, TColor color) {
 	const auto& viewport = getViewport();
 
 	if (viewport.intersects(bounds))
-		renderFilledRectangleNative(viewport.getIntersection(bounds), value);
+		renderFilledRectangleNative(viewport.getIntersection(bounds), color);
 }
 
-template<typename TValue>
-Size RenderBuffer<TValue>::getTextSize(Font *font, const char *text) {
+template<typename TColor>
+Size RenderBuffer<TColor>::getTextSize(Font *font, const char *text) {
 	const char* charPtr;
 	size_t charIndex = 0;
 	const Glyph* glyph;
@@ -224,8 +224,8 @@ Size RenderBuffer<TValue>::getTextSize(Font *font, const char *text) {
 	};
 }
 
-template<typename TValue>
-void RenderBuffer<TValue>::renderText(const Point &point, Font* font, TValue value, const char* text) {
+template<typename TColor>
+void RenderBuffer<TColor>::renderText(const Point &point, Font* font, TColor color, const char* text) {
 	const char* charPtr;
 	size_t charIndex = 0;
 	const Glyph* glyph;
@@ -254,7 +254,7 @@ void RenderBuffer<TValue>::renderText(const Point &point, Font* font, TValue val
 
 					// We have pixel!
 					if ((bitmapByte >> bitmapBitIndex % 8) & 0b1)
-						renderPixel(Point(x + i, point.getY() + j), value);
+						renderPixel(Point(x + i, point.getY() + j), color);
 
 					bitmapBitIndex++;
 				}

@@ -17,6 +17,6 @@ class EightBitsPaletteBuffer : public PaletteBuffer<uint8_t> {
 		void renderFilledRectangleNative(const Bounds& bounds, uint8_t paletteIndex) override;
 
 	private:
-		uint16_t _govnoPalette[256] {};
+		uint16_t _palette[256] {};
 };
 

@@ -4,29 +4,29 @@
 #include <cstring>
 #include "renderBuffer.h"
 
-template<typename TValue>
-class PaletteBuffer : public RenderBuffer<TValue> {
+template<typename TIndex>
+class PaletteBuffer : public RenderBuffer<TIndex> {
 	public:
 		PaletteBuffer(Driver *driver, const Size &resolution, uint16_t *palette);
 
-		void setPaletteColor(TValue index, uint16_t color);
-		void clearNative(TValue paletteIndex) override;
+		void setPaletteColor(TIndex index, uint16_t paletteIndex);
+		void clearNative(TIndex paletteIndex) override;
 
 	protected:
 		uint16_t* _palette;
 };
 
-template<typename TValue>
-PaletteBuffer<TValue>::PaletteBuffer(Driver *driver, const Size &resolution, uint16_t *palette) : RenderBuffer<TValue>(driver, resolution), _palette(palette) {
+template<typename TIndex>
+PaletteBuffer<TIndex>::PaletteBuffer(Driver *driver, const Size &resolution, uint16_t *palette) : RenderBuffer<TIndex>(driver, resolution), _palette(palette) {
 
 }
 
-template<typename TValue>
-void PaletteBuffer<TValue>::setPaletteColor(TValue index, uint16_t color) {
-	_palette[index] = color;
+template<typename TIndex>
+void PaletteBuffer<TIndex>::setPaletteColor(TIndex index, uint16_t paletteIndex) {
+	_palette[index] = paletteIndex;
 }
 
-template<typename TValue>
-void PaletteBuffer<TValue>::clearNative(TValue paletteIndex) {
+template<typename TIndex>
+void PaletteBuffer<TIndex>::clearNative(TIndex paletteIndex) {
 	memset((uint16_t*) this->_buffer, (int) paletteIndex, this->_bufferLength);
 }
