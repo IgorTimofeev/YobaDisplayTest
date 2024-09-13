@@ -117,15 +117,11 @@ void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor
 			deltaY = abs(y2 - y1),
 
 			partRemaining = deltaX,
-			yStep = -1,
-			partX = x1;
+			yStep = y1 > y2 ? -1 : 1,
+			partVarFrom = x1;
 
 		uint16_t partLength = 0;
 
-		if (y1 < y2)
-			yStep = 1;
-
-		// Split into steep and not steep for FastH/V separation
 		if (deltaYGreater) {
 			while (x1 <= x2) {
 				partLength++;
@@ -135,14 +131,14 @@ void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor
 					partRemaining += deltaX;
 
 					if (partLength == 1) {
-						renderPixel(Point(y1, partX), color);
+						renderPixel(Point(y1, partVarFrom), color);
 					}
 					else {
-						renderVerticalLine(Point(y1, partX), partLength, color);
+						renderVerticalLine(Point(y1, partVarFrom), partLength, color);
 					}
 
 					partLength = 0;
-					partX = x1 + 1;
+					partVarFrom = x1 + 1;
 					y1 += yStep;
 				}
 
@@ -150,7 +146,7 @@ void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor
 			}
 
 			if (partLength > 0)
-				renderVerticalLine(Point(y1, partX), partLength, color);
+				renderVerticalLine(Point(y1, partVarFrom), partLength, color);
 		}
 		else {
 			while (x1 <= x2) {
@@ -161,14 +157,14 @@ void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor
 					partRemaining += deltaX;
 
 					if (partLength == 1) {
-						renderPixel(Point(partX, y1), color);
+						renderPixel(Point(partVarFrom, y1), color);
 					}
 					else {
-						renderHorizontalLine(Point(partX, y1), partLength, color);
+						renderHorizontalLine(Point(partVarFrom, y1), partLength, color);
 					}
 
 					partLength = 0;
-					partX = x1 + 1;
+					partVarFrom = x1 + 1;
 					y1 += yStep;
 				}
 
@@ -176,7 +172,7 @@ void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor
 			}
 
 			if (partLength > 0)
-				renderHorizontalLine(Point(partX, y1), partLength, color);
+				renderHorizontalLine(Point(partVarFrom, y1), partLength, color);
 		}
 	}
 }
