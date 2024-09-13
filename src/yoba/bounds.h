@@ -69,11 +69,11 @@ class Bounds {
 		}
 
 		int32_t getX2() const {
-			return _x + _width;
+			return _x + _width - 1;
 		}
 
 		int32_t getY2() const {
-			return _y + _height;
+			return _y + _height - 1;
 		}
 
 		int32_t getXCenter() const {
@@ -100,18 +100,18 @@ class Bounds {
 
 		bool intersects(const Point& point) const {
 			return
-				point.getX() >= _x
-				&& point.getY() >= _y
-				&& point.getX() < getX2()
-				&& point.getY() < getY2();
+				point.getX() >= getX()
+				&& point.getY() >= getY()
+				&& point.getX() <= getX2()
+				&& point.getY() <= getY2();
 		}
 
 		bool intersects(const Bounds& bounds) const {
 			return !(
 				getX() > bounds.getX2()
-				|| bounds.getX() > getX2()
+				|| getX2() < bounds.getX()
 				|| getY() > bounds.getY2()
-				|| bounds.getY() > getY2()
+				|| getY2() < bounds.getY()
 			);
 		}
 
@@ -120,8 +120,8 @@ class Bounds {
 
 			result.setX(max(getX(), bounds.getX()));
 			result.setY(max(getY(), bounds.getY()));
-			result.setWidth(min(getX2(), bounds.getX2()) - result.getX());
-			result.setHeight(min(getY2(), bounds.getY2()) - result.getY());
+			result.setWidth(min(getX2(), bounds.getX2()) - result.getX() + 1);
+			result.setHeight(min(getY2(), bounds.getY2()) - result.getY() + 1);
 
 			return result;
 		}

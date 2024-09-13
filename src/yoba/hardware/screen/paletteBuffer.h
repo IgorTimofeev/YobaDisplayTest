@@ -10,7 +10,7 @@ class PaletteBuffer : public RenderBuffer<TValue> {
 		PaletteBuffer(Driver *driver, const Size &resolution, uint16_t *palette);
 
 		void setPaletteColor(TValue index, uint16_t color);
-		void clear(TValue paletteIndex) override;
+		void clearNative(TValue paletteIndex) override;
 
 	protected:
 		uint16_t* _palette;
@@ -27,6 +27,6 @@ void PaletteBuffer<TValue>::setPaletteColor(TValue index, uint16_t color) {
 }
 
 template<typename TValue>
-void PaletteBuffer<TValue>::clear(TValue paletteIndex) {
+void PaletteBuffer<TValue>::clearNative(TValue paletteIndex) {
 	memset((uint16_t*) this->_buffer, (int) paletteIndex, this->_bufferLength);
 }

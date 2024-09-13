@@ -11,9 +11,10 @@ class EightBitsPaletteBuffer : public PaletteBuffer<uint8_t> {
 		void flush() override;
 
 	protected:
-		void renderPixelUnchecked(const Point &point, uint8_t paletteIndex) override;
-		void renderHorizontalLineUnchecked(const Point &point, uint16_t width, uint8_t paletteIndex) override;
-		void renderFilledRectangleUnchecked(const Bounds& bounds, uint8_t paletteIndex) override;
+		void renderPixelNative(const Point &point, uint8_t paletteIndex) override;
+		void renderHorizontalLineNative(const Point &point, uint16_t width, uint8_t paletteIndex) override;
+		void renderVerticalLineNative(const Point &point, uint16_t height, uint8_t paletteIndex) override;
+		void renderFilledRectangleNative(const Bounds& bounds, uint8_t paletteIndex) override;
 
 	private:
 		uint16_t _govnoPalette[256] {};

@@ -17,8 +17,8 @@ EightBitsPaletteBuffer buffer = EightBitsPaletteBuffer(
 	Size(320, 240)
 );
 
-// Unscii1616Font font = Unscii16Font();
-Unscii8ThinFont font = Unscii8ThinFont();
+Unscii16Font font = Unscii16Font();
+//Unscii8ThinFont font = Unscii8ThinFont();
 
 void setup() {
 	Serial.begin(115200);
@@ -54,7 +54,8 @@ int32_t paletteIndexInc = 1;
 Point pivot = Point(5, 5);
 int32_t pivotInc = 1;
 
-void clearDisplay() {
+void render() {
+	// Clearing display
 	buffer.clear(paletteIndex);
 
 	paletteIndex += paletteIndexInc;
@@ -67,42 +68,55 @@ void clearDisplay() {
 		paletteIndex = 0;
 		paletteIndexInc = 1;
 	}
-}
 
-void renderPrimitives() {
-	Point point = pivot;
+	// Viewport
+	uint16_t viewportPadding = 20;
+
+	buffer.setViewport(Bounds(
+		viewportPadding,
+		viewportPadding,
+		buffer.getSize().getWidth() - viewportPadding * 2,
+		buffer.getSize().getHeight() - viewportPadding * 2
+	));
+
+	// Viewport visualization
+	buffer.renderFilledRectangle(
+		buffer.getViewport(),
+		constrain(paletteIndex + paletteIndexInc, 0, 15)
+	);
 
 	// Dots
-	for (int32_t x = point.getX(); x < point.getX() + 100; x += 5)
-		buffer.renderPixel(Point(x, point.getY()), 16);
+	for (int32_t x = pivot.getX(); x < pivot.getX() + 100; x += 5)
+		buffer.renderPixel(Point(x, pivot.getY()), 16);
 
-	point.setY(point.getY() + 10);
+	// Horizontal line
+	buffer.renderHorizontalLine(Point(pivot.getX(), pivot.getY() + 10), 100, 17);
 
-	// Line
-	buffer.renderHorizontalLine(point, 100, 17);
-	point.setY(point.getY() + 10);
+	// Vertical line
+	buffer.renderVerticalLine(Point(pivot.getX() + 110, pivot.getY() + 10), 40, 17);
 
 	// Rect
-	buffer.renderFilledRectangle(Bounds(point.getX(), point.getY(), 100, 30), 18);
-	point.setY(point.getY() + 40);
+	buffer.renderFilledRectangle(Bounds(pivot.getX(), pivot.getY() + 20, 100, 30), 18);
 
 	// Text
 	char pizda[255];
 	sprintf(pizda, "Uptime: %.2f s", (float) millis() / 1000.0f);
-	buffer.renderText(point, &font, 0, pizda);
-	point.setY(point.getY() + 40);
+	buffer.renderText(Point(pivot.getX(), pivot.getY() + 60), &font, 0, pizda);
 
-	pivot.setX(pivot.getX() + 1);
+	pivot.setX(pivot.getX() + pivotInc);
+	pivot.setY(pivot.getY() + pivotInc);
 
-	if (pivot.getX() > buffer.getViewport().getX2())
+	if (pivot.getX() > buffer.getSize().getWidth())
 		pivot.setX(0);
+
+	if (pivot.getY() > buffer.getSize().getHeight())
+		pivot.setY(0);
 }
 
 void loop() {
 	auto startTime = esp_timer_get_time();
 
-	clearDisplay();
-	renderPrimitives();
+	render();
 
 	buffer.flush();
 

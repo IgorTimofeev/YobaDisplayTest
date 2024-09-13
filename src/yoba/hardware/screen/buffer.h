@@ -20,6 +20,9 @@ class Buffer {
 		const Size &getSize() const;
 
 		Bounds& getViewport();
+
+		void setViewport(const Bounds& bounds);
+
 		void resetViewport();
 
 		virtual void allocate() = 0;

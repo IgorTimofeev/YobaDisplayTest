@@ -32,6 +32,10 @@ Bounds &Buffer::getViewport() {
 	return _viewport;
 }
 
+void Buffer::setViewport(const Bounds& bounds) {
+	_viewport = bounds;
+}
+
 void Buffer::resetViewport() {
 	_viewport.setX(0);
 	_viewport.setY(0);
@@ -46,5 +50,4 @@ size_t Buffer::getIndex(uint16_t x, uint16_t y) const {
 size_t Buffer::getIndex(const Point &point) const {
 	return getIndex(point.getX(), point.getY());
 }
-
 
