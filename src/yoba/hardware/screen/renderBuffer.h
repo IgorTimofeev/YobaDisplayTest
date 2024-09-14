@@ -118,7 +118,7 @@ void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor
 			deltaX = x2 - x1,
 			deltaY = abs(y2 - y1),
 
-			partRemaining = deltaX,
+			partRemaining = deltaX >> 1,
 			yStep = y1 > y2 ? -1 : 1,
 			partVarFrom = x1;
 
