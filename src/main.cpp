@@ -119,7 +119,7 @@ void render() {
 	buffer.renderTriangle(Point(pivot.getX(), pivot.getY() + 80), Point(pivot.getX() + 40, pivot.getY() + 85), Point(pivot.getX() + 22, pivot.getY() + 120), 18);
 
 	// Filled triangle
-	buffer.renderFilledTriangle(Point(pivot.getX() + 50, pivot.getY() + 80), Point(pivot.getX() + 90, pivot.getY() + 85), Point(pivot.getX() + 72, pivot.getY() + 120), 18);
+	buffer.renderFilledTriangle(Point(pivot.getX() + 50, pivot.getY() + 80), Point(pivot.getX() + 90, pivot.getY() + 85), Point(pivot.getX() + 72, pivot.getY() + 120), 16);
 }
 
 void loop() {
