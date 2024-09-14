@@ -51,7 +51,7 @@ void setup() {
 
 int32_t paletteIndex = 0;
 int32_t paletteIndexInc = 1;
-Point pivot = Point(5, 5);
+Point pivot = Point(10, 20);
 int32_t pivotInc = 1;
 
 void render() {
@@ -70,7 +70,7 @@ void render() {
 	}
 
 	// Viewport
-	uint16_t viewportPadding = 20;
+	uint16_t viewportPadding = 10;
 
 	buffer.setViewport(Bounds(
 		viewportPadding,
@@ -104,7 +104,7 @@ void render() {
 	buffer.renderText(Point(pivot.getX(), pivot.getY() + 60), &font, 0, pizda);
 
 	pivot.setX(pivot.getX() + pivotInc);
-	pivot.setY(pivot.getY() + pivotInc);
+//	pivot.setY(pivot.getY() + pivotInc);
 
 	if (pivot.getX() > buffer.getSize().getWidth())
 		pivot.setX(0);
@@ -113,7 +113,7 @@ void render() {
 		pivot.setY(0);
 
 	// Line
-	buffer.renderLine(Point(pivot.getX(), pivot.getY()), Point(pivot.getX() + 10, pivot.getY() + 130), 16);
+	buffer.renderLine(Point(pivot.getX() + 5, pivot.getY() + 5), Point(pivot.getX() + 30, pivot.getY() + 130), 17);
 
 	// Triangle
 	buffer.renderTriangle(Point(pivot.getX(), pivot.getY() + 80), Point(pivot.getX() + 40, pivot.getY() + 85), Point(pivot.getX() + 22, pivot.getY() + 120), 18);

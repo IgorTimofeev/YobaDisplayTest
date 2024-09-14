@@ -3,14 +3,14 @@
 
 ILI9341Driver::ILI9341Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : Driver(chipSelectPin, dataCommandPin, resetPin) {
 	// Glitches & tearing can appear on 26m, 40m+ won't work anyway
-	_SPIFrequency = SPI_MASTER_FREQ_26M;
+	setSPIFrequency(SPI_MASTER_FREQ_26M);
 
 	// This will allocate 320 * 40 = 25600 pixels * 2 bytes per each = 25 KiB of heap,
 	// allowing screen buffer to be flushed in 240 / 40 = 6 equal parts,
 	// which more than enough to achieve ~800 FPS on simple scenes on 240 MHz ESP32.
 	// Increasing this to 48/60/80/120 can afford you 10-100 extra FPS, but will
 	// eat RAM like a bulimic bitch
-	_transactionBufferHeight = 40;
+	setTransactionBufferHeight(40);
 }
 
 void ILI9341Driver::writeInitializationCommands() {

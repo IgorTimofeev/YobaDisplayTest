@@ -13,9 +13,14 @@ class RenderBuffer : public Buffer {
 		void renderHorizontalLine(const Point &point, uint16_t length, TColor color);
 		void renderVerticalLine(const Point &point, uint16_t length, TColor color);
 		void renderFilledRectangle(const Bounds& bounds, TColor color);
+
+		// Thanks, AdaFruit!
 		void renderLine(const Point& from, const Point& to, TColor color);
+		// Thanks, AdaFruit!
 		void renderTriangle(const Point& point1, const Point& point2, const Point& point3, TColor color);
+		// Thanks, AdaFruit!
 		void renderFilledTriangle(const Point& point1, const Point& point2, const Point& point3, TColor color);
+
 		void renderText(const Point& point, Font* font, TColor color, const char* text);
 		Size getTextSize(Font* font, const char* text);
 
