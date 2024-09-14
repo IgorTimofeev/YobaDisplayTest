@@ -98,9 +98,6 @@ void render() {
 	// Rect
 	buffer.renderFilledRectangle(Bounds(pivot.getX(), pivot.getY() + 20, 100, 30), 18);
 
-	// Line
-	buffer.renderLine(Point(pivot.getX(), pivot.getY()), Point(pivot.getX() + 10, pivot.getY() + 130), 16);
-
 	// Text
 	char pizda[255];
 	sprintf(pizda, "Uptime: %.2f s", (float) millis() / 1000.0f);
@@ -114,6 +111,15 @@ void render() {
 
 	if (pivot.getY() > buffer.getSize().getHeight())
 		pivot.setY(0);
+
+	// Line
+	buffer.renderLine(Point(pivot.getX(), pivot.getY()), Point(pivot.getX() + 10, pivot.getY() + 130), 16);
+
+	// Triangle
+	buffer.renderTriangle(Point(pivot.getX(), pivot.getY() + 80), Point(pivot.getX() + 40, pivot.getY() + 85), Point(pivot.getX() + 22, pivot.getY() + 120), 18);
+
+	// Filled triangle
+	buffer.renderFilledTriangle(Point(pivot.getX() + 50, pivot.getY() + 80), Point(pivot.getX() + 90, pivot.getY() + 85), Point(pivot.getX() + 72, pivot.getY() + 120), 18);
 }
 
 void loop() {

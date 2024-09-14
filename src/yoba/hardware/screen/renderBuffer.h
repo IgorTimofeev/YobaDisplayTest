@@ -14,6 +14,8 @@ class RenderBuffer : public Buffer {
 		void renderVerticalLine(const Point &point, uint16_t length, TColor color);
 		void renderFilledRectangle(const Bounds& bounds, TColor color);
 		void renderLine(const Point& from, const Point& to, TColor color);
+		void renderTriangle(const Point& point1, const Point& point2, const Point& point3, TColor color);
+		void renderFilledTriangle(const Point& point1, const Point& point2, const Point& point3, TColor color);
 		void renderText(const Point& point, Font* font, TColor color, const char* text);
 		Size getTextSize(Font* font, const char* text);
 
@@ -174,6 +176,122 @@ void RenderBuffer<TColor>::renderLine(const Point &from, const Point &to, TColor
 			if (partLength > 0)
 				renderHorizontalLine(Point(partVarFrom, y1), partLength, color);
 		}
+	}
+}
+
+template<typename TColor>
+void RenderBuffer<TColor>::renderTriangle(const Point &point1, const Point &point2, const Point &point3, TColor color) {
+	// Simple as fuck
+	renderLine(point1, point2, color);
+	renderLine(point2, point3, color);
+	renderLine(point3, point1, color);
+}
+
+template<typename TColor>
+void RenderBuffer<TColor>::renderFilledTriangle(const Point &point1, const Point &point2, const Point &point3, TColor color) {
+	int32_t
+		x1 = point1.getX(),
+		y1 = point1.getY(),
+		x2 = point2.getX(),
+		y2 = point2.getY(),
+		x3 = point3.getX(),
+		y3 = point3.getY();
+
+	// Sort coordinates by Y order (y2 >= y1 >= y0)
+	if (y1 > y2) {
+		std::swap(y1, y2);
+		std::swap(x1, x2);
+	}
+
+	if (y2 > y3) {
+		std::swap(y3, y2);
+		std::swap(x3, x2);
+	}
+
+	if (y1 > y2) {
+		std::swap(y1, y2);
+		std::swap(x1, x2);
+	}
+
+	int32_t a, b;
+
+	// No triangle here, just single line
+	if (y1 == y3) {
+		a = b = x1;
+
+		if (x2 < a) {
+			a = x2;
+		}
+		else if (x2 > b) {
+			b = x2;
+		}
+
+		if (x3 < a) {
+			a = x3;
+		}
+		else if (x3 > b) {
+			b = x3;
+		}
+
+		renderHorizontalLine(Point(a, y1), b - a + 1, color);
+
+		return;
+	}
+
+	int32_t
+		dx12 = x2 - x1,
+		dy12 = y2 - y1,
+		dx13 = x3 - x1,
+		dy13 = y3 - y1,
+		dx23 = x3 - x2,
+		dy23 = y3 - y2,
+		sa = 0,
+		sb = 0,
+		last,
+		y;
+
+	// For upper part of triangle, find scanline crossings for segments
+	// 0-1 and 0-2.  If y1=y2 (flat-bottomed triangle), the scanline y1
+	// is included here (and second loop will be skipped, avoiding a /0
+	// error there), otherwise scanline y1 is skipped here and handled
+	// in the second loop...which also avoids a /0 error here if y0=y1
+	// (flat-topped triangle).
+	if (y2 == y3) {
+		last = y2;  // Include y1 scanline
+	}
+	else {
+		last = y2 - 1; // Skip it
+	}
+
+	for (y = y1; y <= last; y++) {
+		a = x1 + sa / dy12;
+		b = x1 + sb / dy13;
+		sa += dx12;
+		sb += dx13;
+
+		if (a > b)
+			std::swap(a, b);
+
+		renderHorizontalLine(Point(a, y), b - a + 1, color);
+	}
+
+	// For lower part of triangle, find scanline crossings for segments
+	// 0-2 and 1-2.  This loop is skipped if y1=y2.
+	sa = dx23 * (y - y2);
+	sb = dx13 * (y - y1);
+
+	while (y <= y3) {
+		a = x2 + sa / dy23;
+		b = x1 + sb / dy13;
+		sa += dx23;
+		sb += dx13;
+
+		if (a > b)
+			std::swap(a, b);
+
+		renderVerticalLine(Point(a, y), b - a + 1, color);
+
+		y++;
 	}
 }
 
