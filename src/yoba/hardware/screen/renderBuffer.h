@@ -289,7 +289,7 @@ void RenderBuffer<TColor>::renderFilledTriangle(const Point &point1, const Point
 		if (a > b)
 			std::swap(a, b);
 
-		renderVerticalLine(Point(a, y), b - a + 1, color);
+		renderHorizontalLine(Point(a, y), b - a + 1, color);
 
 		y++;
 	}
