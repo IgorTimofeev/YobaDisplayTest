@@ -1,7 +1,7 @@
 #include "ILI9341Driver.h"
 #include "yoba/hardware/screen/buffer.h"
 
-ILI9341DriverSettings::ILI9341DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : DriverSettings(chipSelectPin, dataCommandPin, resetPin) {
+ILI9341Driver::ILI9341Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : Driver(chipSelectPin, dataCommandPin, resetPin) {
 	// Glitches & tearing can appear on 26m, 40m+ won't work anyway
 	_SPIFrequency = SPI_MASTER_FREQ_26M;
 
@@ -11,10 +11,6 @@ ILI9341DriverSettings::ILI9341DriverSettings(uint8_t chipSelectPin, uint8_t data
 	// Increasing this to 48/60/80/120 can afford you 10-100 extra FPS, but will
 	// eat RAM like a bulimic bitch
 	_transactionBufferHeight = 40;
-}
-
-ILI9341Driver::ILI9341Driver(const ILI9341DriverSettings& settings) : Driver(settings) {
-
 }
 
 void ILI9341Driver::writeInitializationCommands() {

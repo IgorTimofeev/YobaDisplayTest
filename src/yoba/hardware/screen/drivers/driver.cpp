@@ -2,52 +2,52 @@
 #include "Arduino.h"
 #include "yoba/hardware/screen/buffer.h"
 
-DriverSettings::DriverSettings(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) : _chipSelectPin(chipSelectPin), _dataCommandPin(dataCommandPin), _resetPin(resetPin) {}
+Driver::Driver(uint8_t chipSelectPin, uint8_t dataCommandPin, int8_t resetPin) :
+	_chipSelectPin(chipSelectPin),
+	_dataCommandPin(dataCommandPin),
+	_resetPin(resetPin)
+{
 
-uint8_t DriverSettings::getChipSelectPin() const {
+}
+
+uint8_t Driver::getChipSelectPin() const {
 	return _chipSelectPin;
 }
 
-void DriverSettings::setChipSelectPin(uint8_t chipSelectPin) {
+void Driver::setChipSelectPin(uint8_t chipSelectPin) {
 	_chipSelectPin = chipSelectPin;
 }
 
-uint8_t DriverSettings::getDataCommandPin() const {
+uint8_t Driver::getDataCommandPin() const {
 	return _dataCommandPin;
 }
 
-void DriverSettings::setDataCommandPin(uint8_t dataCommandPin) {
+void Driver::setDataCommandPin(uint8_t dataCommandPin) {
 	_dataCommandPin = dataCommandPin;
 }
 
-int8_t DriverSettings::getResetPin() const {
+int8_t Driver::getResetPin() const {
 	return _resetPin;
 }
 
-void DriverSettings::setResetPin(int8_t resetPin) {
+void Driver::setResetPin(int8_t resetPin) {
 	_resetPin = resetPin;
 }
 
-int32_t DriverSettings::getSPIFrequency() const {
+int32_t Driver::getSPIFrequency() const {
 	return _SPIFrequency;
 }
 
-void DriverSettings::setSPIFrequency(int32_t spiFrequency) {
+void Driver::setSPIFrequency(int32_t spiFrequency) {
 	_SPIFrequency = spiFrequency;
 }
 
-uint8_t DriverSettings::getTransactionBufferHeight() const {
+uint8_t Driver::getTransactionBufferHeight() const {
 	return _transactionBufferHeight;
 }
 
-void DriverSettings::setTransactionBufferHeight(uint8_t transactionBufferHeight) {
+void Driver::setTransactionBufferHeight(uint8_t transactionBufferHeight) {
 	_transactionBufferHeight = transactionBufferHeight;
-}
-
-Driver::Driver(const DriverSettings& settings) :
-	_settings(settings)
-{
-
 }
 
 void Driver::writeInitializationCommands() {
@@ -61,13 +61,13 @@ void Driver::begin(Buffer* display) {
 		.sclk_io_num = SCK,
 		.quadwp_io_num = -1,
 		.quadhd_io_num = -1,
-		.max_transfer_sz = _settings.getTransactionBufferHeight() * display->getSize().getWidth() * 2 + 8
+		.max_transfer_sz = getTransactionBufferHeight() * display->getSize().getWidth() * 2 + 8
 	};
 
 	spi_device_interface_config_t deviceConfig = {
 		.mode = 0,                              //SPI mode 0
-		.clock_speed_hz = _settings.getSPIFrequency(),     //Clock out at required MHz
-		.spics_io_num = _settings.getChipSelectPin(),             //CS pin
+		.clock_speed_hz = getSPIFrequency(),     //Clock out at required MHz
+		.spics_io_num = getChipSelectPin(),             //CS pin
 		.queue_size = 7,                        //We want to be able to queue 7 transactions at a time
 		.pre_cb = SPIPreCallback, //Specify pre-transfer callback to handle D/C line
 	};
@@ -83,10 +83,10 @@ void Driver::begin(Buffer* display) {
 	ESP_ERROR_CHECK(result);
 
 	//Initialize non-SPI GPIOs
-	uint64_t gpioConfigPinMask = 1ULL << _settings.getDataCommandPin();
+	uint64_t gpioConfigPinMask = 1ULL << getDataCommandPin();
 
-	if (_settings.getResetPin() >= 0)
-		gpioConfigPinMask |= 1ULL << _settings.getResetPin();
+	if (getResetPin() >= 0)
+		gpioConfigPinMask |= 1ULL << getResetPin();
 
 	gpio_config_t gpioConfig {
 		.pin_bit_mask = gpioConfigPinMask,
@@ -97,18 +97,18 @@ void Driver::begin(Buffer* display) {
 	gpio_config(&gpioConfig);
 
 	// Toggle reset pin if it was defined
-	if (_settings.getResetPin() >= 0) {
-		gpio_set_level((gpio_num_t) _settings.getResetPin(), 0);
+	if (getResetPin() >= 0) {
+		gpio_set_level((gpio_num_t) getResetPin(), 0);
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 
-		gpio_set_level((gpio_num_t) _settings.getResetPin(), 1);
+		gpio_set_level((gpio_num_t) getResetPin(), 1);
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 	}
 
 	writeInitializationCommands();
 
 	//Allocate memory for the transaction buffer
-	_transactionBufferLength = display->getSize().getWidth() * _settings.getTransactionBufferHeight() * 2;
+	_transactionBufferLength = display->getSize().getWidth() * getTransactionBufferHeight() * 2;
 	_transactionBuffer = (uint16_t*) heap_caps_malloc(_transactionBufferLength, MALLOC_CAP_DMA);
 	assert(_transactionBuffer != nullptr);
 }
@@ -180,13 +180,13 @@ void Driver::flushTransactionBuffer(Buffer* display, int y) {
 
 	transactions[3].tx_data[0] = y >> 8;    //Start page high
 	transactions[3].tx_data[1] = y & 0xff;  //start page low
-	transactions[3].tx_data[2] = (y + _settings.getTransactionBufferHeight() - 1) >> 8; //end page high
-	transactions[3].tx_data[3] = (y + _settings.getTransactionBufferHeight() - 1) & 0xff; //end page low
+	transactions[3].tx_data[2] = (y + getTransactionBufferHeight() - 1) >> 8; //end page high
+	transactions[3].tx_data[3] = (y + getTransactionBufferHeight() - 1) & 0xff; //end page low
 
 	transactions[4].tx_data[0] = 0x2C;         //memory write
 
 	transactions[5].tx_buffer = _transactionBuffer;      //finally send the line data
-	transactions[5].length = display->getSize().getWidth() * _settings.getTransactionBufferHeight() * 2 * 8;  //Data length, in bits
+	transactions[5].length = display->getSize().getWidth() * getTransactionBufferHeight() * 2 * 8;  //Data length, in bits
 	transactions[5].flags = 0; //undo SPI_TRANS_USE_TXDATA flag
 
 	// Enqueue all transactions
@@ -224,10 +224,6 @@ size_t Driver::getTransactionBufferLength() const {
 void Driver::sendCommandAndData(uint8_t command, const uint8_t *data, int length) {
 	sendCommand(command);
 	sendData(data, length);
-}
-
-const DriverSettings &Driver::getSettings() const {
-	return _settings;
 }
 
 DriverSPIPreCallbackUserData::DriverSPIPreCallbackUserData(Driver *driver, bool dataCommandPinState) : driver(driver), dataCommandPinState(dataCommandPinState) {}

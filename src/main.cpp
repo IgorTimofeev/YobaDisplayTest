@@ -6,11 +6,11 @@
 #include "resources/fonts/Unscii16Font.h"
 #include "resources/fonts/Unscii8ThinFont.h"
 
-ILI9341Driver driver = ILI9341Driver(ILI9341DriverSettings(
+ILI9341Driver driver = ILI9341Driver(
 	5,
 	16,
 	17
-));
+);
 
 EightBitsPaletteBuffer buffer = EightBitsPaletteBuffer(
 	&driver,

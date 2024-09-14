@@ -11,10 +11,10 @@ void EightBitsPaletteBuffer::allocate() {
 }
 
 void EightBitsPaletteBuffer::flush() {
-	const size_t pixelCount = getSize().getWidth() * _driver->getSettings().getTransactionBufferHeight();
+	const size_t pixelCount = getSize().getWidth() * _driver->getTransactionBufferHeight();
 	size_t bufferIndex = 0;
 
-	for (uint16_t y = 0; y < getSize().getHeight(); y += _driver->getSettings().getTransactionBufferHeight()) {
+	for (uint16_t y = 0; y < getSize().getHeight(); y += _driver->getTransactionBufferHeight()) {
 		for (size_t i = 0; i < pixelCount; i++)
 			_driver->getTransactionBuffer()[i] = _palette[_buffer[bufferIndex++]];
 
